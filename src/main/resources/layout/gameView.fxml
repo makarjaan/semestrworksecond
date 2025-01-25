@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+
+<AnchorPane fx:id="anchorPane" maxHeight="Infinity" maxWidth="Infinity" minHeight="0.0" minWidth="0.0" prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.makarova.secondsemestrwork.controller.MainController">
+   <children>
+      <ImageView fitHeight="813.0" fitWidth="1000.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/field_play.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="622.0" layoutX="188.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/wall_above_below.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="805.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="803.0" layoutY="116.0" pickOnBounds="true" preserveRatio="true" x="3.0">
+         <image>
+            <Image url="@../image/background/wall_edges.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="141.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="137.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true" x="3.0">
+         <image>
+            <Image url="@../image/background/wall_edges.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="98.0" fitWidth="655.0" layoutX="163.0" layoutY="655.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/wall_above_below.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="139.0" layoutY="652.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="74.0" layoutX="806.0" layoutY="650.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <Pane fx:id="pane" prefHeight="570.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="165.0" AnchorPane.topAnchor="100.0">
+         <children>
+            <ImageView fx:id="playerView" fitHeight="58.0" fitWidth="58.0" layoutX="130.0" layoutY="217.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../image/playerRed/red_init.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
