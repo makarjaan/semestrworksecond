@@ -31,7 +31,7 @@ public class GameView extends BaseView  {
             root.requestFocus();
 
             Message updateMessage = MessageFactory.create(
-                    MessegeType.PLAYER_POSITION_UPDATE_TYPE,
+                    MessegeType.SET_PLAYER_POSITION_TYPE,
                     ("Разместить игроков").getBytes());
 
             getApplication().getGameClient().sendMessage(updateMessage);

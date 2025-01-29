@@ -13,5 +13,7 @@ public interface Server {
 
     void sendBroadcastMessage(Message message) throws ServerException;
 
+    void sendMessageToAllExceptSender(Message message, int senderId) throws ServerException;
+
     public void start() throws ServerException;
 }

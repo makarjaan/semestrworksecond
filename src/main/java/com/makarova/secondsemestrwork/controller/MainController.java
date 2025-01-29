@@ -1,5 +1,6 @@
 package com.makarova.secondsemestrwork.controller;
 
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -78,7 +79,6 @@ public class MainController implements MessageReceiverController{
                 } else {
                     p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\blue\\blue.png");
                 }
-
                 if (playerViews.containsKey(p)) {
                     pane.getChildren().remove(playerViews.get(p));
                 }
@@ -89,56 +89,73 @@ public class MainController implements MessageReceiverController{
                 imageView.setLayoutY(p.getY());
 
                 pane.getChildren().add(imageView);
-                System.out.println("ImageView count: " + pane.getChildren().size());
-
                 playerViews.put(p, imageView);
             });
         }
     }
 
-
-
     private void update() {
-        for (Player player : players) {
-            if (player.getId() == localPlayerId) {
-                Platform.runLater(() -> {
-                    ImageView imageView = playerViews.get(player);
-                    double paneWidth = pane.getWidth();
-                    double paneHeight = pane.getHeight();
-                    double playerWidth = imageView.getFitWidth();
-                    double playerHeight = imageView.getFitHeight();
-
-                    boolean isMoving = false;
-
-                    if (right ^ left ^ up ^ down) {
-                        if (right && player.getX() + playerWidth + player.getSpeed() <= paneWidth) {
-                            player.moveRight();
-                            isMoving = true;
-                        } else if (left && player.getX() - player.getSpeed() >= 0) {
-                            player.moveLeft();
-                            isMoving = true;
-                        } else if (up && player.getY() - player.getSpeed() >= 0) {
-                            player.moveUp();
-                            isMoving = true;
-                        } else if (down && player.getY() + playerHeight + player.getSpeed() <= paneHeight) {
-                            player.moveDown();
-                            isMoving = true;
-                        }
-                    }
-
-                    if (isMoving) {
-                        player.startAnimation();
-                    } else {
-                        player.stopAnimation();
-                    }
-
-                    imageView.setLayoutX(player.getX());
-                    imageView.setLayoutY(player.getY());
-                });
+        Platform.runLater(() -> {
+            for (Player player : players) {
+                if (player.getId() == localPlayerId) {
+                    updateLocalPlayer(player);
+                } else {
+                    updateOtherPlayers(player);
+                }
             }
-       //     checkCollisions();
+        });
+    }
+
+    private void updateLocalPlayer(Player player) {
+        ImageView imageView = playerViews.get(player);
+        if (imageView == null) return;
+
+        double paneWidth = pane.getWidth();
+        double paneHeight = pane.getHeight();
+        double playerWidth = imageView.getFitWidth();
+        double playerHeight = imageView.getFitHeight();
+        boolean isMoving = false;
+
+        if (right ^ left ^ up ^ down) {
+            if (right && player.getX() + playerWidth + player.getSpeed() <= paneWidth) {
+                player.moveRight();
+                isMoving = true;
+            } else if (left && player.getX() - player.getSpeed() >= 0) {
+                player.moveLeft();
+                isMoving = true;
+            } else if (up && player.getY() - player.getSpeed() >= 0) {
+                player.moveUp();
+                isMoving = true;
+            } else if (down && player.getY() + playerHeight + player.getSpeed() <= paneHeight) {
+                player.moveDown();
+                isMoving = true;
+            }
         }
 
+        if (isMoving) {
+            player.startAnimation();
+        } else {
+            player.stopAnimation();
+        }
+
+        imageView.setLayoutX(player.getX());
+        imageView.setLayoutY(player.getY());
+    }
+
+    private void updateOtherPlayers(Player player) {
+        ImageView imageView = playerViews.get(player);
+        if (imageView == null) return;
+        boolean isMoving = player.getPrevX() != player.getX() || player.getPrevY() != player.getY();
+        if (isMoving) {
+            player.startAnimation();
+        } else {
+            player.stopAnimation();
+        }
+        imageView.setLayoutX(player.getX());
+        imageView.setLayoutY(player.getY());
+
+        player.setPrevX(player.getX());
+        player.setPrevY(player.getY());
     }
 
     private void generateRandomImage() {
@@ -174,7 +191,7 @@ public class MainController implements MessageReceiverController{
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
-            case MessegeType.PLAYER_POSITION_UPDATE_TYPE -> {
+            case MessegeType.SET_PLAYER_POSITION_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 System.out.println("Получен список игроков: " + json);
 
@@ -182,11 +199,46 @@ public class MainController implements MessageReceiverController{
                 List<PlayerDto> playersDto = gson.fromJson(json, listType);
 
                 for (PlayerDto p : playersDto) {
-                    Player player = new Player(p.getX(), p.getY(), p.getId());
-                    players.add(player);
+                    boolean playerExists = players.stream()
+                            .anyMatch(existingPlayer -> existingPlayer.getId() == p.getId());
+
+                    if (!playerExists) {
+                        Player player = new Player(p.getX(), p.getY(), p.getId());
+                        player.setPrevX(player.getX());
+                        player.setPrevY(player.getY());
+                        players.add(player);
+                    } else {
+                        System.out.println("Игрок с id " + p.getId() + " уже существует.");
+                    }
                 }
                 localPlayerId = getApplication().getGameClient().idPlayer;
                 updatePlayerViews();
+            }
+
+            case MessegeType.PLAYER_POSITION_UPDATE_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                Type type = new TypeToken<Map<String, Object>>() {}.getType();
+                Map<String, Object> receivedData = gson.fromJson(json, type);
+
+                PlayerDto playerDto = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
+                int offsetY = ((Double) receivedData.get("offsetY")).intValue();
+                Player player = players.get(playerDto.getId());
+                player.setX(playerDto.getX());
+                player.setY(playerDto.getY());
+                Platform.runLater(() -> {
+                    ImageView imageView = playerViews.get(player);
+                    if (imageView != null) {
+                        pane.getChildren().remove(imageView);
+                    }
+                    imageView = player.getImageSpriteView();
+                    imageView.setLayoutX(player.getX());
+                    imageView.setLayoutY(player.getY());
+                    player.spriteAnimation.setOffsetY(offsetY);
+                    if (!pane.getChildren().contains(imageView)) {
+                        pane.getChildren().add(imageView);
+                    }
+                    playerViews.put(player, imageView);
+                });
             }
         }
     }

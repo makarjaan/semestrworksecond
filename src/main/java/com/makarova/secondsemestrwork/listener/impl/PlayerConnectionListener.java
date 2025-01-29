@@ -24,8 +24,6 @@ public class PlayerConnectionListener extends AbstractEventListener {
 
     private final int requiredPlayers;
 
-    private final Gson gson = new Gson();
-
 
     public PlayerConnectionListener(int requiredPlayers) {
         this.requiredPlayers = requiredPlayers;

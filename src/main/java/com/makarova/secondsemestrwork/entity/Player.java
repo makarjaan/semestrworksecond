@@ -1,28 +1,39 @@
 package com.makarova.secondsemestrwork.entity;
 
+import com.google.gson.Gson;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
+import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
+import com.makarova.secondsemestrwork.protocol.Message;
+import com.makarova.secondsemestrwork.protocol.MessegeType;
 import com.makarova.secondsemestrwork.sprite.SpriteAnimation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
+
 
 public class Player {
     public ImageView imageSpriteView;
     public SpriteAnimation spriteAnimation;
     public int x, y;
+    public int prevX, prevY;
     public int speed;
     public int id;
-
-    public Player(int id) {
-        this.id = id;
-    }
+    private PlayerDto playerDto;
+    Gson gson = new Gson();
 
     public Player(int x, int y, int id) {
         this.speed = 2;
         this.x = x;
         this.y = y;
         this.id = id;
+        playerDto = new PlayerDto(this);
     }
 
     public void setimageSpriteView(String url) {
@@ -36,29 +47,57 @@ public class Player {
                 47, 48);
     }
 
-    public Player getById(int id) {
-        return this;
-    }
-
 
     public void moveUp() {
         y -= speed;
+        playerDto.setY(y);
         spriteAnimation.setOffsetY(144);
+        try {
+            sendMessage(playerDto, spriteAnimation.getOffsetY());
+        } catch (InvalidMessageException e) {
+            throw new RuntimeException(e);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void moveDown() {
         y += speed;
+        playerDto.setY(y);
         spriteAnimation.setOffsetY(48);
+        try {
+            sendMessage(playerDto, spriteAnimation.getOffsetY());
+        } catch (InvalidMessageException e) {
+            throw new RuntimeException(e);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void moveLeft() {
         x -= speed;
+        playerDto.setX(x);
         spriteAnimation.setOffsetY(0);
+        try {
+            sendMessage(playerDto, spriteAnimation.getOffsetY());
+        } catch (InvalidMessageException e) {
+            throw new RuntimeException(e);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void moveRight() {
         x += speed;
+        playerDto.setX(x);
         spriteAnimation.setOffsetY(96);
+        try {
+            sendMessage(playerDto, spriteAnimation.getOffsetY());
+        } catch (InvalidMessageException e) {
+            throw new RuntimeException(e);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ImageView getImageSpriteView() {
@@ -68,29 +107,25 @@ public class Player {
         return imageSpriteView;
     }
 
-    public void setImageSpriteView(ImageView imageSpriteView) {
-        this.imageSpriteView = imageSpriteView;
+    public void sendMessage(PlayerDto playerDto, int offsetY) throws InvalidMessageException, ClientException {
+        Map<String, Object> data = new HashMap<>();
+        data.put("playerDto", playerDto);
+        data.put("offsetY", offsetY);
+        String json = gson.toJson(data);
+        Message moveMessage = new Message(
+                MessegeType.PLAYER_POSITION_UPDATE_TYPE,
+                json.getBytes(StandardCharsets.UTF_8)
+        );
+        getApplication().getGameClient().sendMessage(moveMessage);
     }
 
-    public SpriteAnimation getSpriteAnimation() {
-        return spriteAnimation;
-    }
-
-    public void setSpriteAnimation(SpriteAnimation spriteAnimation) {
-        this.spriteAnimation = spriteAnimation;
-    }
-
-    public int getX() {
-        return x;
-    }
+    public int getX() { return x;}
 
     public void setX(int x) {
         this.x = x;
     }
 
-    public int getY() {
-        return y;
-    }
+    public int getY() { return y;}
 
     public void setY(int y) {
         this.y = y;
@@ -100,17 +135,15 @@ public class Player {
         return speed;
     }
 
-    public void setSpeed(int speed) {
-        this.speed = speed;
-    }
+    public int getId() { return id; }
 
-    public int getId() {
-        return id;
-    }
+    public int getPrevX() { return prevX; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setPrevX(int prevX) { this.prevX = prevX; }
+
+    public int getPrevY() { return prevY; }
+
+    public void setPrevY(int prevY) { this.prevY = prevY;}
 
     public void stopAnimation() {
         spriteAnimation.stop();

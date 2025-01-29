@@ -2,7 +2,8 @@ package com.makarova.secondsemestrwork.server;
 
 
 import com.makarova.secondsemestrwork.listener.impl.PlayerConnectionListener;
-import com.makarova.secondsemestrwork.listener.impl.PlayerPositionUpdateListener;
+import com.makarova.secondsemestrwork.listener.impl.PositionUpdateListener;
+import com.makarova.secondsemestrwork.listener.impl.SetPlayerPositionListener;
 
 public class AppServer {
 
@@ -12,7 +13,8 @@ public class AppServer {
         try {
             Server server = new ServerImpl(PORT);
             server.registerListener(new PlayerConnectionListener(2));
-            server.registerListener(new PlayerPositionUpdateListener());
+            server.registerListener(new SetPlayerPositionListener());
+            server.registerListener(new PositionUpdateListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

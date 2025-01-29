@@ -30,7 +30,6 @@ public class ServerImpl implements Server {
     protected boolean started;
     protected List<Socket> sockets;
     public List<PlayerDto> players;
-    private Gson gson = new Gson();
 
 
     public ServerImpl(int port){
@@ -107,6 +106,26 @@ public class ServerImpl implements Server {
             throw new ServerException("Can't send message.", ex);
         }
     }
+
+    @Override
+    public void sendMessageToAllExceptSender(Message message, int senderId) throws ServerException {
+        if (!started) {
+            throw new ServerException("Server hasn't been started yet.");
+        }
+        try {
+            byte[] rawMessage = MessageProtocol.getBytes(message);
+            for (int i = 0; i < sockets.size(); i++) {
+                if (i != senderId) {
+                    Socket socket = sockets.get(i);
+                    socket.getOutputStream().write(rawMessage);
+                    socket.getOutputStream().flush();
+                }
+            }
+        } catch (IOException ex) {
+            throw new ServerException("Can't send message.", ex);
+        }
+    }
+
 
     protected void handleConnection(Socket socket) throws ServerException {
         sockets.add(socket);
