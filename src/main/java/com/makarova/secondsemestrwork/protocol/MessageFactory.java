@@ -2,8 +2,6 @@ package com.makarova.secondsemestrwork.protocol;
 
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 
-import java.nio.ByteBuffer;
-
 public class MessageFactory {
 
     public static final int MAX_LENGTH = 100 * 1024;
@@ -14,7 +12,7 @@ public class MessageFactory {
                     + " bytes length. Maximum is " + MAX_LENGTH + "."
             );
         }
-        if (!MessegeType.getAllTypes().contains(messageType)) {
+        if (!MessageType.getAllTypes().contains(messageType)) {
             throw new InvalidMessageException("Wrong message type");
         }
         return new Message(messageType, data);

@@ -1,34 +1,26 @@
 package com.makarova.secondsemestrwork.controller;
 
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.makarova.secondsemestrwork.client.GameClient;
+import com.makarova.secondsemestrwork.entity.Pistol;
 import com.makarova.secondsemestrwork.entity.Player;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
-import com.makarova.secondsemestrwork.exceptions.ClientException;
-import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
+import com.makarova.secondsemestrwork.entity.RocketDto;
 import com.makarova.secondsemestrwork.protocol.Message;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
-import com.makarova.secondsemestrwork.sprite.SpriteAnimation;
+import com.makarova.secondsemestrwork.protocol.MessageType;
 import javafx.animation.AnimationTimer;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 
 import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
@@ -36,19 +28,12 @@ import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 public class MainController implements MessageReceiverController{
 
     @FXML
-    private ResourceBundle resources;
-
-    @FXML
-    private URL location;
-
-    @FXML
-    private AnchorPane anchorPane;
-
-    @FXML
     private Pane pane;
 
     private Map<Player, ImageView> playerViews = new HashMap<>();
+    private Map<Player, Pistol> pistols = new HashMap<>();
     public List<Player> players = new ArrayList<>();
+    List<ImageView> rocketImages = new ArrayList<>();
     private int localPlayerId;
     private Gson gson = new Gson();
     public boolean left = false;
@@ -65,9 +50,6 @@ public class MainController implements MessageReceiverController{
 
     @FXML
     void initialize() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(2), e -> generateRandomImage()));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
         timer.start();
     }
 
@@ -75,9 +57,10 @@ public class MainController implements MessageReceiverController{
         for (Player p : players) {
             Platform.runLater(() -> {
                 if (p.getId() == 0) {
-                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\playerRed\\red.png");
+                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\player\\red.png");
+                    p.spriteAnimation.setOffsetY(96);
                 } else {
-                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\blue\\blue.png");
+                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\player\\blue.png");
                 }
                 if (playerViews.containsKey(p)) {
                     pane.getChildren().remove(playerViews.get(p));
@@ -87,15 +70,41 @@ public class MainController implements MessageReceiverController{
                 imageView.setFitHeight(64);
                 imageView.setLayoutX(p.getX());
                 imageView.setLayoutY(p.getY());
-
                 pane.getChildren().add(imageView);
                 playerViews.put(p, imageView);
+
+                if (!pistols.containsKey(p)) {
+                    Pistol pistol = new Pistol(p.getX(), p.getY());
+                    ImageView pistolImageView = pistol.getImageView();
+                    if (p.getId() == 1 || p.getId() == 2) {
+                        pistol.setX(p.getX() + 113);
+                        pistol.setY(p.getY() + 57);
+                        pistolImageView.setRotate(-90);
+                    } else {
+                        pistol.setX(p.getX() - 113);
+                        pistol.setY(p.getY() + 57);
+                        pistolImageView.setRotate(90);
+                    }
+                    pistolImageView.setFitWidth(25);
+                    pistolImageView.setFitHeight(236);
+                    pistolImageView.setLayoutX(pistol.getX());
+                    pistolImageView.setLayoutY(pistol.getY());
+
+                    pistols.put(p, pistol);
+                    pane.getChildren().add(pistol.getImageView());
+                }
             });
         }
     }
 
     private void update() {
         Platform.runLater(() -> {
+            List<ImageView> rocketImagesCopy = new ArrayList<>(rocketImages);
+            for (ImageView rocketImage : rocketImagesCopy) {
+                if (!pane.getChildren().contains(rocketImage)) {
+                    pane.getChildren().add(rocketImage);
+                }
+            }
             for (Player player : players) {
                 if (player.getId() == localPlayerId) {
                     updateLocalPlayer(player);
@@ -103,6 +112,7 @@ public class MainController implements MessageReceiverController{
                     updateOtherPlayers(player);
                 }
             }
+
         });
     }
 
@@ -158,40 +168,44 @@ public class MainController implements MessageReceiverController{
         player.setPrevY(player.getY());
     }
 
-    private void generateRandomImage() {
-        Image randomImage = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\rocket.png");
-        double xPos = Math.random() * (pane.getWidth() - 64);
-        double yPos = Math.random() * (pane.getHeight() - 64);
-        ImageView imageView = new ImageView(randomImage);
+    private ImageView createRocketImage(double x, double y) {
+        Image image = new Image("file:C:/Users/arina/IdeaProjects/secondsemestrwork/src/main/resources/image/boosters/rocket.png");
+        ImageView imageView = new ImageView(image);
         imageView.setFitWidth(20);
         imageView.setFitHeight(35);
-        imageView.setLayoutX(xPos);
-        imageView.setLayoutY(yPos);
+        imageView.setLayoutX(x);
+        imageView.setLayoutY(y);
         imageView.setRotate(45);
-        pane.getChildren().add(imageView);
+        return imageView;
     }
-/*
+
+
+
     private void checkCollisions() {
-        Bounds playerBounds = playerView.getBoundsInParent();
-        pane.getChildren().removeIf(node -> {
-            if (node instanceof ImageView && node != playerView) {
-                Bounds rocketBounds = node.getBoundsInParent();
-                if (playerBounds.intersects(rocketBounds)) {
-                    return true;
-                }
+        for (Player player : players) {
+            if (player.id == localPlayerId) {
+                Bounds playerBounds = player.getImageSpriteView().getBoundsInParent();
+                pane.getChildren().removeIf(node -> {
+                    if (node instanceof ImageView && node != player.getImageSpriteView()) {
+                        Bounds rocketBounds = node.getBoundsInParent();
+                        if (playerBounds.intersects(rocketBounds)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
             }
-            return false;
-        });
+        }
     }
 
 
- */
+
 
 
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
-            case MessegeType.SET_PLAYER_POSITION_TYPE -> {
+            case MessageType.SET_PLAYER_POSITION_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 System.out.println("Получен список игроков: " + json);
 
@@ -215,7 +229,7 @@ public class MainController implements MessageReceiverController{
                 updatePlayerViews();
             }
 
-            case MessegeType.PLAYER_POSITION_UPDATE_TYPE -> {
+            case MessageType.PLAYER_POSITION_UPDATE_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 Type type = new TypeToken<Map<String, Object>>() {}.getType();
                 Map<String, Object> receivedData = gson.fromJson(json, type);
@@ -239,6 +253,23 @@ public class MainController implements MessageReceiverController{
                     }
                     playerViews.put(player, imageView);
                 });
+            }
+
+            case MessageType.INIT_ROCKET_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                Type listType = new TypeToken<List<RocketDto>>() {}.getType();
+                List<RocketDto> rockets = gson.fromJson(json, listType);
+                for (RocketDto r : rockets) {
+                    rocketImages.add(createRocketImage(r.getX(), r.getY()));
+                    System.out.println("Ракета добавлена: " + r);
+                }
+            }
+
+            case MessageType.GENERATE_ROCKET_TYPE -> {
+                System.out.println("СГЕНЕРИРОВАННАЯ РАКЕТА ПЕРЕДАЛАСЬ В КОНТРОЛЛЕР");
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                RocketDto rocketDto = gson.fromJson(json, RocketDto.class);
+                rocketImages.add(createRocketImage(rocketDto.getX(), rocketDto.getY()));
             }
         }
     }

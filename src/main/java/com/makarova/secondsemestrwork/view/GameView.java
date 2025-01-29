@@ -1,19 +1,14 @@
 package com.makarova.secondsemestrwork.view;
 
-import com.google.gson.Gson;
 import com.makarova.secondsemestrwork.controller.MainController;
-import com.makarova.secondsemestrwork.controller.MessageReceiverController;
-import com.makarova.secondsemestrwork.entity.Player;
-import com.makarova.secondsemestrwork.entity.PlayerDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
-import javafx.application.Platform;
+import com.makarova.secondsemestrwork.protocol.MessageType;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.input.KeyCode;
+
 import java.io.IOException;
 
 
@@ -31,7 +26,7 @@ public class GameView extends BaseView  {
             root.requestFocus();
 
             Message updateMessage = MessageFactory.create(
-                    MessegeType.SET_PLAYER_POSITION_TYPE,
+                    MessageType.SET_PLAYER_POSITION_TYPE,
                     ("Разместить игроков").getBytes());
 
             getApplication().getGameClient().sendMessage(updateMessage);

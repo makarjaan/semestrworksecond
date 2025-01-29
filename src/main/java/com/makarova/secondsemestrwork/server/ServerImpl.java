@@ -1,26 +1,36 @@
 package com.makarova.secondsemestrwork.server;
 
 import com.google.gson.Gson;
-import com.makarova.secondsemestrwork.entity.Player;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
+import com.makarova.secondsemestrwork.entity.RocketDto;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.exceptions.ServerEventListenerException;
 import com.makarova.secondsemestrwork.listener.ServerEventListener;
+import com.makarova.secondsemestrwork.listener.impl.SetPlayerPositionListener;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
 import com.makarova.secondsemestrwork.protocol.MessageProtocol;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
+import com.makarova.secondsemestrwork.protocol.MessageType;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.rmi.ServerException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
 public class ServerImpl implements Server {
 
@@ -28,9 +38,10 @@ public class ServerImpl implements Server {
     protected int port;
     protected ServerSocket server;
     protected boolean started;
+    protected boolean stertTimer = false;
     protected List<Socket> sockets;
     public List<PlayerDto> players;
-
+    public Gson gson = new Gson();
 
     public ServerImpl(int port){
         this.listeners = new ArrayList<>();
@@ -43,6 +54,42 @@ public class ServerImpl implements Server {
     public List<PlayerDto> getPlayers() {
         return players;
     }
+
+
+    public void startPeriodicMessageSending() {
+        if (stertTimer) {
+            return;
+        }
+        Timer timer = new Timer();
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Запуск генерации ракеты");
+                RocketDto newRocket = new RocketDto((int) (Math.random() * 556.6), (int) (Math.random() * 506.4));
+                String response = gson.toJson(newRocket);
+                System.out.println("одна ракета " + response);
+
+                try {
+                    Message rocketGenerationMessage = MessageFactory.create(
+                            MessageType.GENERATE_ROCKET_TYPE,
+                            response.getBytes(StandardCharsets.UTF_8)
+                    );
+
+                    sendBroadcastMessage(rocketGenerationMessage);
+                    System.out.println("Сообщение о новой ракете отправлено: " + response);
+
+                } catch (InvalidMessageException e) {
+                    System.err.println("Ошибка с сообщением: " + e.getMessage());
+                } catch (ServerException e) {
+                    System.err.println("Ошибка с сервером: " + e.getMessage());
+                }
+            }
+        };
+
+        timer.scheduleAtFixedRate(task, 8000, 4000);
+    }
+
 
     @Override
     public void registerListener(ServerEventListener listener) throws ServerException {
@@ -126,7 +173,6 @@ public class ServerImpl implements Server {
         }
     }
 
-
     protected void handleConnection(Socket socket) throws ServerException {
         sockets.add(socket);
         int connectionId = sockets.lastIndexOf(socket);
@@ -137,6 +183,10 @@ public class ServerImpl implements Server {
                 for (ServerEventListener listener : listeners) {
                     if (message.getType() == listener.getType()) {
                         listener.handle(connectionId, message);
+                    }
+                    if (message.getType() == MessageType.SET_PLAYER_POSITION_TYPE) {
+                        startPeriodicMessageSending();
+                        stertTimer = true;
                     }
                 }
             }
@@ -149,4 +199,6 @@ public class ServerImpl implements Server {
             throw new ServerException("Problem with handling message", e);
         }
     }
+
+
 }

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
+import com.makarova.secondsemestrwork.protocol.MessageType;
 import com.makarova.secondsemestrwork.sprite.SpriteAnimation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
@@ -113,7 +113,7 @@ public class Player {
         data.put("offsetY", offsetY);
         String json = gson.toJson(data);
         Message moveMessage = new Message(
-                MessegeType.PLAYER_POSITION_UPDATE_TYPE,
+                MessageType.PLAYER_POSITION_UPDATE_TYPE,
                 json.getBytes(StandardCharsets.UTF_8)
         );
         getApplication().getGameClient().sendMessage(moveMessage);

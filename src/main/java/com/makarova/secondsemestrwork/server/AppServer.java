@@ -1,9 +1,7 @@
 package com.makarova.secondsemestrwork.server;
 
 
-import com.makarova.secondsemestrwork.listener.impl.PlayerConnectionListener;
-import com.makarova.secondsemestrwork.listener.impl.PositionUpdateListener;
-import com.makarova.secondsemestrwork.listener.impl.SetPlayerPositionListener;
+import com.makarova.secondsemestrwork.listener.impl.*;
 
 public class AppServer {
 
@@ -15,6 +13,8 @@ public class AppServer {
             server.registerListener(new PlayerConnectionListener(2));
             server.registerListener(new SetPlayerPositionListener());
             server.registerListener(new PositionUpdateListener());
+            server.registerListener(new InitRocketListener());
+            server.registerListener(new GenerateRocketListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

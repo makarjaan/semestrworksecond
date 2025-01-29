@@ -2,23 +2,17 @@ package com.makarova.secondsemestrwork.client;
 
 import com.google.gson.Gson;
 import com.makarova.secondsemestrwork.controller.MessageReceiverController;
-import com.makarova.secondsemestrwork.entity.Player;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageProtocol;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
-import javafx.application.Platform;
+import com.makarova.secondsemestrwork.protocol.MessageType;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-
-import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
 
 public class GameClient implements Client {
@@ -119,7 +113,7 @@ public class GameClient implements Client {
                         gameClient.controller.receiveMessage(message);
                     }
 
-                    if (message.getType() == MessegeType.PLAYER_CONNECTION_TYPE) {
+                    if (message.getType() == MessageType.PLAYER_CONNECTION_TYPE) {
                         String json = new String(message.getData(), StandardCharsets.UTF_8);
                         PlayerDto player = gson.fromJson(json, PlayerDto.class);
                         gameClient.idPlayer = player.getId();

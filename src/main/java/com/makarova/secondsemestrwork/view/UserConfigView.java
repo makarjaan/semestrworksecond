@@ -1,15 +1,16 @@
 package com.makarova.secondsemestrwork.view;
 
-import com.makarova.secondsemestrwork.client.GameClient;
-import com.makarova.secondsemestrwork.controller.MainController;
+import com.google.gson.Gson;
 import com.makarova.secondsemestrwork.controller.MessageReceiverController;
 import com.makarova.secondsemestrwork.entity.Player;
+import com.makarova.secondsemestrwork.entity.RocketDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
+import com.makarova.secondsemestrwork.listener.impl.GenerateRocketListener;
 import com.makarova.secondsemestrwork.model.UserConfig;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
-import com.makarova.secondsemestrwork.protocol.MessegeType;
+import com.makarova.secondsemestrwork.protocol.MessageType;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -18,7 +19,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 
-import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +32,7 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
     private TextField host;
     private TextField port;
     private Button start;
-    private List<Player> players = new ArrayList<>();
-    private int playerNumber;
-
+    Gson gson = new Gson();
 
     @Override
     public Parent getView() {
@@ -70,7 +69,7 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
                 try {
                     getApplication().startGame();
                     Message connectionMessage = MessageFactory.create(
-                            MessegeType.PLAYER_CONNECTION_TYPE,
+                            MessageType.PLAYER_CONNECTION_TYPE,
                             ("Игрок " + userConfig.getUsername() + " ждёт запуска игры").getBytes());
 
                     getApplication().getGameClient().sendMessage(connectionMessage);
@@ -92,7 +91,8 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
-            case MessegeType.GAME_START_TYPE -> {
+            case MessageType.GAME_START_TYPE -> {
+
                 Platform.runLater(() -> {
                     getApplication().setView(getApplication().getGameView());
                 });

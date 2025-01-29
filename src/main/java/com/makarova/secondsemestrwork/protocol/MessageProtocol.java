@@ -33,7 +33,7 @@ public class MessageProtocol {
             //читает тип сообщения
             in.read(buffer, 0, 4);
             int messageType = ByteBuffer.wrap(buffer, 0, 4).getInt();
-            if (!MessegeType.getAllTypes().contains(messageType)) {
+            if (!MessageType.getAllTypes().contains(messageType)) {
                 throw new InvalidMessageException("Wrong message type: " + messageType + ".");
             }
 
@@ -120,7 +120,7 @@ public class MessageProtocol {
 
         byte[] messageData = message.getData();
 
-        if (message.getType() == MessegeType.PLAYER_CONNECTION_TYPE && messageData.length == 4) {
+        if (message.getType() == MessageType.PLAYER_CONNECTION_TYPE && messageData.length == 4) {
             int value = ByteBuffer.wrap(messageData).getInt();
             sb.append("Всего игроков: ").append(value).append(nl);
         } else {
