@@ -1,76 +1,154 @@
 package com.makarova.secondsemestrwork.client;
 
-import com.makarova.secondsemestrwork.GameApplication;
+import com.google.gson.Gson;
+import com.makarova.secondsemestrwork.controller.MessageReceiverController;
+import com.makarova.secondsemestrwork.entity.Player;
+import com.makarova.secondsemestrwork.entity.PlayerDto;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
+import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
+import com.makarova.secondsemestrwork.protocol.Message;
+import com.makarova.secondsemestrwork.protocol.MessageProtocol;
+import com.makarova.secondsemestrwork.protocol.MessegeType;
+import javafx.application.Platform;
 
-
-import java.net.Socket;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.*;
 
-public class GameClient {
-    private GameApplication application;
-    private Socket socket;
-    private ClientThread clientThread;
+import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
-    public GameClient(GameApplication application) {
-        this.application = application;
+
+public class GameClient implements Client {
+
+    protected final InetAddress address;
+
+    protected final int port;
+
+    protected Socket socket;
+
+    private ClientThread thread;
+
+    private MessageReceiverController controller;
+
+    public int idPlayer;
+
+
+    //запоминаем с кем и по какому порту соединиться
+    public GameClient(InetAddress address, int port) {
+        this.address = address;
+        this.port = port;
     }
 
-    public GameApplication getApplication() {
-        return application;
-    }
-
-    public void sendMessage(String message) {
+    //создаём соединение
+    @Override
+    public void connect() throws ClientException {
         try {
-            clientThread.out.write(message+"\n");
-            clientThread.out.flush();
+            socket = new Socket(address, port);
+            InputStream input = socket.getInputStream();
+            OutputStream output = socket.getOutputStream();
+            thread = new ClientThread(input, output, this);
+            new Thread(thread).start();
+            System.out.println("Подключение к серверу " + address + ":" + port + " успешно!");
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ClientException("Can't connect. ", e);
         }
     }
 
-    public void start() {
-        String host = application.getUserConfig().getHost();
-        int port = application.getUserConfig().getPort();
-
-        BufferedReader in;
-        BufferedWriter out;
-
+    //получаем сообщение, сериализуем и принимаем его
+    @Override
+    public void sendMessage(Message message) throws ClientException, InvalidMessageException {
         try {
-            socket = new Socket(host, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-
-            clientThread = new ClientThread(in, out, this);
-
-            new Thread(clientThread).start();
+            System.out.println("Отправка сообщения серверу: \n" + MessageProtocol.toReadableString(message));
+            thread.getOut().write(MessageProtocol.getBytes(message));
+            thread.getOut().flush();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ClientException("Can't send message. ", e);
         }
-
     }
 
-    static class ClientThread implements Runnable {
+    public void setController(MessageReceiverController controller) {
+        this.controller = controller;
+    }
 
-        private BufferedReader in;
-        private BufferedWriter out;
-        private GameClient client;
+    public MessageReceiverController getController() {
+        return controller;
+    }
 
-        public ClientThread(BufferedReader in, BufferedWriter out, GameClient client) {
+    public void stopClient() {
+        if (thread != null) {
+            thread.stop();
+            System.out.println("Поток клиента завершен.");
+        }
+        if (socket != null && !socket.isClosed()) {
+            try {
+                socket.close();
+                System.out.println("Соединение с сервером закрыто.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static class ClientThread implements Runnable {
+
+        private final InputStream in;
+        private final OutputStream out;
+        private final GameClient gameClient;
+        private boolean running;
+        private final Gson gson = new Gson();
+
+        public ClientThread(InputStream in, OutputStream out, GameClient gameClient) {
             this.in = in;
             this.out = out;
-            this.client = client;
+            this.gameClient = gameClient;
+            this.running = true;
         }
 
         @Override
         public void run() {
             try {
-                while (true) {
-                    String message = in.readLine();
-                    //client.getApplication().appendMessage(message);
+                while (running) {
+                    Message message = MessageProtocol.readMessage(in);
+                    System.out.println(gameClient.controller);
+                    
+                    if (message != null && gameClient.controller != null) {
+                        gameClient.controller.receiveMessage(message);
+                    }
+
+                    if (message.getType() == MessegeType.PLAYER_CONNECTION_TYPE) {
+                        String json = new String(message.getData(), StandardCharsets.UTF_8);
+                        PlayerDto player = gson.fromJson(json, PlayerDto.class);
+                        gameClient.idPlayer = player.getId();
+                    }
+
+                    System.out.println("Ответ от сервера: " + MessageProtocol.toReadableString(message));
+
                 }
+            } catch (InvalidMessageException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        public InputStream getIn() {
+            return in;
+        }
+
+        public OutputStream getOut() {
+            return out;
+        }
+
+        public void stop() {
+            try {
+                in.close();
+                out.close();
+                gameClient.socket.close();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
     }

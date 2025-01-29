@@ -1,5 +1,10 @@
 package com.makarova.secondsemestrwork.protocol;
 
+
+import javax.swing.plaf.PanelUI;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 public class Message {
 
     protected int type;

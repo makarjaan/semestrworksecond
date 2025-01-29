@@ -1,6 +1,16 @@
 package com.makarova.secondsemestrwork.view;
 
+import com.makarova.secondsemestrwork.client.GameClient;
+import com.makarova.secondsemestrwork.controller.MainController;
+import com.makarova.secondsemestrwork.controller.MessageReceiverController;
+import com.makarova.secondsemestrwork.entity.Player;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
+import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.model.UserConfig;
+import com.makarova.secondsemestrwork.protocol.Message;
+import com.makarova.secondsemestrwork.protocol.MessageFactory;
+import com.makarova.secondsemestrwork.protocol.MessegeType;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -8,8 +18,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UserConfigView extends BaseView {
+
+public class UserConfigView extends BaseView implements MessageReceiverController{
 
     private AnchorPane pane;
     private VBox box;
@@ -17,6 +31,9 @@ public class UserConfigView extends BaseView {
     private TextField host;
     private TextField port;
     private Button start;
+    private List<Player> players = new ArrayList<>();
+    private int playerNumber;
+
 
     @Override
     public Parent getView() {
@@ -48,10 +65,21 @@ public class UserConfigView extends BaseView {
                 userConfig.setPort(Integer.parseInt(port.getText()));
 
                 getApplication().setUserConfig(userConfig);
+                getApplication().getGameClient().setController(this);
 
-                getApplication().startGame();
+                try {
+                    getApplication().startGame();
+                    Message connectionMessage = MessageFactory.create(
+                            MessegeType.PLAYER_CONNECTION_TYPE,
+                            ("Игрок " + userConfig.getUsername() + " ждёт запуска игры").getBytes());
 
-                getApplication().setView(getApplication().getGameView());
+                    getApplication().getGameClient().sendMessage(connectionMessage);
+
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                } catch (InvalidMessageException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         box.getChildren().addAll(
@@ -59,5 +87,16 @@ public class UserConfigView extends BaseView {
                 host, portLabel, port, start
         );
         pane.getChildren().addAll(box);
+    }
+
+    @Override
+    public void receiveMessage(Message message) {
+        switch (message.getType()) {
+            case MessegeType.GAME_START_TYPE -> {
+                Platform.runLater(() -> {
+                    getApplication().setView(getApplication().getGameView());
+                });
+            }
+        }
     }
 }

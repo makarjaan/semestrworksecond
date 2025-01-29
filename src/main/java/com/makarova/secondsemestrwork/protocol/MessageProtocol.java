@@ -6,12 +6,13 @@ import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+
+//серилизация и десирилизация данных, типы сообщения и общая логика проткола
 public class MessageProtocol {
 
-    public static final int TYPE1 = 1;
-    public static final int TYPE2 = 2;
 
     public static final int MAX_LENGTH = 100 * 1024;
     protected static final byte[] START_BYTES = new byte[]{0x0, 0x1};
@@ -32,7 +33,7 @@ public class MessageProtocol {
             //читает тип сообщения
             in.read(buffer, 0, 4);
             int messageType = ByteBuffer.wrap(buffer, 0, 4).getInt();
-            if (messageType != TYPE1 && messageType != TYPE2) { //вынеси в отдельный класс типы сообщений ПОТОМУ ЧТО МНОГО
+            if (!MessegeType.getAllTypes().contains(messageType)) {
                 throw new InvalidMessageException("Wrong message type: " + messageType + ".");
             }
 
@@ -59,7 +60,7 @@ public class MessageProtocol {
              */
             return MessageFactory.create(messageType, buffer);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read message", e);
+            throw new InvalidMessageException("Can't read message", e);
         }
     }
 
@@ -112,4 +113,21 @@ public class MessageProtocol {
         }
         return sb.toString();
     }
+
+    public static String toReadableString(Message message) {
+        StringBuilder sb = new StringBuilder();
+        String nl = System.lineSeparator();
+
+        byte[] messageData = message.getData();
+
+        if (message.getType() == MessegeType.PLAYER_CONNECTION_TYPE && messageData.length == 4) {
+            int value = ByteBuffer.wrap(messageData).getInt();
+            sb.append("Всего игроков: ").append(value).append(nl);
+        } else {
+            sb.append(new String(messageData, StandardCharsets.UTF_8)).append(nl);
+        }
+
+        return sb.toString();
+    }
+
 }

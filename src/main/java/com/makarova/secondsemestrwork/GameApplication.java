@@ -1,16 +1,25 @@
 package com.makarova.secondsemestrwork;
 
 import com.makarova.secondsemestrwork.client.GameClient;
+import com.makarova.secondsemestrwork.controller.MainController;
+import com.makarova.secondsemestrwork.entity.Player;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.model.UserConfig;
 import com.makarova.secondsemestrwork.view.BaseView;
 import com.makarova.secondsemestrwork.view.GameView;
 import com.makarova.secondsemestrwork.view.UserConfigView;
 import javafx.application.Application;
-import javafx.geometry.Rectangle2D;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class GameApplication extends Application {
@@ -21,12 +30,15 @@ public class GameApplication extends Application {
     private GameView gameView;
     private GameClient gameClient;
 
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 5555;
+
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws UnknownHostException {
         primaryStage.setTitle("Game");
         primaryStage.setOnCloseRequest(e -> System.exit(0));
         BaseView.setApplication(this);
@@ -36,39 +48,36 @@ public class GameApplication extends Application {
         primaryStage.setResizable(false);
 
         userConfigView = new UserConfigView();
-        gameView = new GameView();
-        gameClient = new GameClient(this);
+        gameClient = new GameClient(InetAddress.getByName(HOST), PORT);
         root = new BorderPane();
-
+        gameView = new GameView();
         Scene scene = new Scene(root);
-        System.out.println(getClass().getResource("/image/background.png"));
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        setView(gameView);
+        setView(userConfigView);
     }
 
     public void setUserConfig(UserConfig userConfig) {
         this.userConfig = userConfig;
     }
 
-    public UserConfigView getUserConfigView() {
-        return userConfigView;
-    }
-
-
     public UserConfig getUserConfig() {
         return userConfig;
     }
 
-    public GameView getGameView() { return gameView; }
+    public GameView getGameView() { return gameView; };
+
+    public void setGameView(GameView gameView) {
+        this.gameView = gameView;
+    }
 
     public GameClient getGameClient() {
         return gameClient;
     }
 
-    public void startGame() {
-        gameClient.start();
+    public void startGame() throws ClientException {
+        gameClient.connect();
     }
 
     public void setView(BaseView view) {

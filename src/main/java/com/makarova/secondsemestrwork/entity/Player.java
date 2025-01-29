@@ -6,22 +6,40 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-public class Player extends Entity {
 
-    Image personRedImage = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\playerRed\\red.png");
+public class Player {
+    public ImageView imageSpriteView;
+    public SpriteAnimation spriteAnimation;
+    public int x, y;
+    public int speed;
+    public int id;
 
-    public Player(int x, int y) {
-        this.imageView = new ImageView(personRedImage);
-        this.imageView.setViewport(new Rectangle2D(0, 0, 47, 48));
-        spriteAnimation = new SpriteAnimation(
-                imageView, Duration.millis(600),
-                12, 12,
-                0, 0,
-                47, 48);
+    public Player(int id) {
+        this.id = id;
+    }
+
+    public Player(int x, int y, int id) {
         this.speed = 2;
         this.x = x;
         this.y = y;
+        this.id = id;
     }
+
+    public void setimageSpriteView(String url) {
+        Image personImage = new Image(url);
+        this.imageSpriteView = new ImageView(personImage);
+        this.imageSpriteView.setViewport(new Rectangle2D(0, 0, 47, 48));
+        spriteAnimation = new SpriteAnimation(
+                imageSpriteView, Duration.millis(600),
+                12, 12,
+                0, 0,
+                47, 48);
+    }
+
+    public Player getById(int id) {
+        return this;
+    }
+
 
     public void moveUp() {
         y -= speed;
@@ -43,23 +61,60 @@ public class Player extends Entity {
         spriteAnimation.setOffsetY(96);
     }
 
+    public ImageView getImageSpriteView() {
+        if (imageSpriteView == null) {
+            imageSpriteView = new ImageView();
+        }
+        return imageSpriteView;
+    }
+
+    public void setImageSpriteView(ImageView imageSpriteView) {
+        this.imageSpriteView = imageSpriteView;
+    }
+
+    public SpriteAnimation getSpriteAnimation() {
+        return spriteAnimation;
+    }
+
+    public void setSpriteAnimation(SpriteAnimation spriteAnimation) {
+        this.spriteAnimation = spriteAnimation;
+    }
+
     public int getX() {
         return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
     }
 
     public int getY() {
         return y;
     }
 
+    public void setY(int y) {
+        this.y = y;
+    }
+
     public int getSpeed() {
         return speed;
     }
 
-    public ImageView getImageView() { return imageView; }
+    public void setSpeed(int speed) {
+        this.speed = speed;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public void stopAnimation() {
         spriteAnimation.stop();
-        imageView.setViewport(new Rectangle2D(0, spriteAnimation.getOffsetY(), 47, 48));
+        imageSpriteView.setViewport(new Rectangle2D(0, spriteAnimation.getOffsetY(), 47, 48));
     }
 
     public void startAnimation() {

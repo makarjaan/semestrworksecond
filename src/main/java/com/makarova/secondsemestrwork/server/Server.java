@@ -1,19 +1,17 @@
 package com.makarova.secondsemestrwork.server;
 
 import com.makarova.secondsemestrwork.listener.ServerEventListener;
-
+import com.makarova.secondsemestrwork.protocol.Message;
 import java.rmi.ServerException;
 
 public interface Server {
 
-    //сервер может получать от клиента разыне типы сообщений и чтобы в самом сервере не нарушать solid
-    //мы можем в сервер записывать разные слушатели
-
-    //сервер получает какое-то сообщение -> проходит по всем слушателям, которые передавали в registerListener
-    //и будет спрашивать "готов ли обработать тип сообщения 1?" и будет вызывать их метод
-
-
+    //логика обработки типов сообщений
     void registerListener(ServerEventListener listener) throws ServerException;
+
+    void sendMessage(int connectionId, Message message) throws ServerException;
+
+    void sendBroadcastMessage(Message message) throws ServerException;
 
     public void start() throws ServerException;
 }
