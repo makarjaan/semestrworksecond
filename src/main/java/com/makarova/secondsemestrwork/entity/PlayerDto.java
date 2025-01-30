@@ -4,6 +4,7 @@ public class PlayerDto {
     private int connectionId;
     private int x;
     private int y;
+    private boolean loaded = false;
 
     public PlayerDto(Player player) {
         this.connectionId = player.getId();
@@ -23,6 +24,13 @@ public class PlayerDto {
         this.connectionId = connectionId;
     }
 
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
 
     public int getX() {
         return x;

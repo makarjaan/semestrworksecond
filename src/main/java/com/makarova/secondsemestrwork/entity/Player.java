@@ -133,6 +133,10 @@ public class Player {
         getApplication().getGameClient().sendMessage(moveMessage);
     }
 
+    public PlayerDto getPlayerDto() {
+        return playerDto;
+    }
+
     public int getX() { return x;}
 
     public void setX(int x) {
@@ -169,6 +173,7 @@ public class Player {
 
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
+        playerDto.setLoaded(loaded);
     }
 
     public void stopAnimation() {

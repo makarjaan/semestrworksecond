@@ -107,8 +107,6 @@ public class GameClient implements Client {
             try {
                 while (running) {
                     Message message = MessageProtocol.readMessage(in);
-                    System.out.println(gameClient.controller);
-                    
                     if (message != null && gameClient.controller != null) {
                         gameClient.controller.receiveMessage(message);
                     }

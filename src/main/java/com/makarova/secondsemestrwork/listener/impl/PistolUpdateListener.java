@@ -1,24 +1,15 @@
 package com.makarova.secondsemestrwork.listener.impl;
 
-import com.google.gson.reflect.TypeToken;
-import com.makarova.secondsemestrwork.entity.PlayerDto;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.exceptions.ServerEventListenerException;
 import com.makarova.secondsemestrwork.listener.AbstractEventListener;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
 import com.makarova.secondsemestrwork.protocol.MessageType;
-import com.makarova.secondsemestrwork.server.ServerImpl;
 
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.rmi.ServerException;
-import java.util.HashMap;
-import java.util.Map;
 
-
-public class PositionUpdateListener extends AbstractEventListener {
-
+public class PistolUpdateListener extends AbstractEventListener {
     @Override
     public void handle(int connectionId, Message message) throws ServerEventListenerException, InvalidMessageException {
         if(!this.isInit){
@@ -26,7 +17,7 @@ public class PositionUpdateListener extends AbstractEventListener {
         }
 
         Message sendPosition = MessageFactory.create(
-                MessageType.PLAYER_POSITION_UPDATE_TYPE,
+                MessageType.PISTOL_UPDATE_TYPE,
                 message.getData()
         );
 
@@ -35,11 +26,10 @@ public class PositionUpdateListener extends AbstractEventListener {
         } catch (ServerException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public int getType() {
-        return MessageType.PLAYER_POSITION_UPDATE_TYPE;
+        return MessageType.PISTOL_UPDATE_TYPE;
     }
 }

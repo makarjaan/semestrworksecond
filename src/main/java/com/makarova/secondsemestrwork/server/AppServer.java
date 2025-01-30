@@ -15,7 +15,7 @@ public class AppServer {
             server.registerListener(new PositionUpdateListener());
             server.registerListener(new InitRocketListener());
             server.registerListener(new GenerateRocketListener());
-            server.registerListener(new PistolUpdateListener());
+            server.registerListener(new BulletUpdateListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

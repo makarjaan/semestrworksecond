@@ -21,7 +21,14 @@ public class InitRocketListener extends AbstractEventListener {
         RocketDto rocketDto = gson.fromJson(request, RocketDto.class);
         List<RocketDto> list = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            list.add(new RocketDto((int) (Math.random() * rocketDto.getX()), (int) (Math.random() * rocketDto.getY())));
+            int x, y;
+            do {
+                x = (int) (Math.random() * rocketDto.getX());
+                y = (int) (Math.random() * rocketDto.getY());
+            } while ((x == 77 && y == 68) || (x == 486 && y == 438) ||
+                    (x == 486 && y == 68) || (x == 77 && y == 438));
+
+            list.add(new RocketDto(x, y));
         }
         String response = gson.toJson(list);
         Message responceGeneresteRocketMessage = MessageFactory.create(
