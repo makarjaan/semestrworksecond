@@ -13,7 +13,10 @@ import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
 import com.makarova.secondsemestrwork.protocol.MessageType;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
@@ -21,6 +24,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 
 import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
@@ -32,7 +36,7 @@ public class MainController implements MessageReceiverController{
 
     private Map<Player, ImageView> playerViews = new HashMap<>();
     private Map<Player, ImageView> pistolsView = new HashMap<>();
-    public List<Player> players = new ArrayList<>();
+    List<Player> players = new ArrayList<>();
     List<ImageView> rocketImages = new ArrayList<>();
     private int localPlayerId;
     private Gson gson = new Gson();
@@ -40,6 +44,8 @@ public class MainController implements MessageReceiverController{
     public boolean right = false;
     public boolean up = false;
     public boolean down = false;
+    public boolean space = false;
+
 
     AnimationTimer timer = new AnimationTimer() {
         @Override
@@ -135,6 +141,7 @@ public class MainController implements MessageReceiverController{
                     Image newImage = pistol.getImageLoaded();
                     pistolView.setImage(newImage);
                     player.setPistol(pistol);
+                    player.setLoaded(true);
                 }
             }
         }
@@ -181,12 +188,86 @@ public class MainController implements MessageReceiverController{
         imageView.setLayoutX(player.getX());
         imageView.setLayoutY(player.getY());
 
+        if (space && player.isLoaded()) {
+            shoot(player);
+            space = false;
+            pistolImageView.setImage(player.getPistol().getImage());
+        }
+
         pistolImageView.setLayoutX(player.getPistol().getX());
         pistolImageView.setLayoutY(player.getPistol().getY());
         String diraction = player.getPistol().getDirection();
         if (diraction != null) {
             updatePistolPosition(player, pistolImageView, diraction);
         }
+    }
+
+    private void shoot(Player player) {
+        player.setLoaded(false);
+        ImageView bulletImageView = new ImageView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\bullet.png");
+        bulletImageView.setFitHeight(75);
+        bulletImageView.setFitWidth(25);
+        bulletImageView.setLayoutX(pistolsView.get(player).getLayoutX());
+        bulletImageView.setLayoutY(pistolsView.get(player).getLayoutY());
+        String bulletDirection = player.getPistol().getDirection();
+        pane.getChildren().add(bulletImageView);
+        Timeline timeline = new Timeline();
+        switch (bulletDirection) {
+            case "right" -> {
+                bulletImageView.setRotate(90);
+                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 78);
+            }
+            case "left" -> {
+                bulletImageView.setRotate(-90);
+                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 82);
+            }
+            case "up" -> {
+                bulletImageView.setRotate(0);
+            }
+            case "down" -> {
+                bulletImageView.setRotate(180);
+                bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 3);
+                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 80);
+            }
+        }
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(10), e -> {
+            switch (bulletDirection) {
+                case "left" -> {
+                    bulletImageView.setLayoutX(bulletImageView.getLayoutX() - 5);
+                }
+                case "right" -> {
+                    bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 5);
+                }
+                case "up" -> {
+                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() - 5);
+                }
+                case "down" -> {
+                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 5);
+                }
+            }
+
+            for (Player p : players) {
+                ImageView target = playerViews.get(p);
+                if (target != null && bulletImageView.getBoundsInParent().intersects(target.getBoundsInParent())) {
+                    pane.getChildren().remove(bulletImageView);
+                    timeline.stop();
+                    return;
+                }
+            }
+            /*
+            for (ImageView wall : walls) {
+                if (bulletImageView.getBoundsInParent().intersects(wall.getBoundsInParent())) {
+                    pane.getChildren().remove(bulletImageView);
+                    ((Timeline) e.getSource()).stop();
+                    return;
+                }
+            }
+
+             */
+        });
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 
     private void updateOtherPlayers(Player player) {
@@ -240,6 +321,9 @@ public class MainController implements MessageReceiverController{
     }
 
     private ImageView createRocketImage(double x, double y) {
+        if ((x == 77 & y == 68) || (x == 486 & y == 438) ||
+                (x == 486 & y == 68) || (x == 77 & y == 438)) {
+            return null; }
         Image image = new Image("file:C:/Users/arina/IdeaProjects/secondsemestrwork/src/main/resources/image/boosters/rocket.png");
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(20);
@@ -247,6 +331,7 @@ public class MainController implements MessageReceiverController{
         imageView.setLayoutX(x);
         imageView.setLayoutY(y);
         imageView.setRotate(45);
+        System.out.println("создали");
         return imageView;
     }
 
@@ -309,20 +394,29 @@ public class MainController implements MessageReceiverController{
                 });
             }
 
-
             case MessageType.INIT_ROCKET_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 Type listType = new TypeToken<List<RocketDto>>() {}.getType();
                 List<RocketDto> rockets = gson.fromJson(json, listType);
                 for (RocketDto r : rockets) {
-                    rocketImages.add(createRocketImage(r.getX(), r.getY()));
+                    ImageView imageView = createRocketImage(r.getX(), r.getY());
+                    if (imageView != null) {
+                        rocketImages.add(imageView);
+                    }
+                }
+                ImageView imageView = createRocketImage(77, 68);
+                if (imageView != null) {
+                    rocketImages.add(imageView);
                 }
             }
 
             case MessageType.GENERATE_ROCKET_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 RocketDto rocketDto = gson.fromJson(json, RocketDto.class);
-                rocketImages.add(createRocketImage(rocketDto.getX(), rocketDto.getY()));
+                ImageView imageView = createRocketImage(rocketDto.getX(), rocketDto.getY());
+                if (imageView != null) {
+                    rocketImages.add(imageView);
+                }
             }
         }
     }

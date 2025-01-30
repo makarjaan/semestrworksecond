@@ -48,6 +48,10 @@ public class Pistol {
 
     public String getDirection() { return direction; }
 
+    public Image getImage() {
+        return image;
+    }
+
     public void setDirection(String direction) {
         this.direction = direction;
         pistolDto.setDirection(direction);

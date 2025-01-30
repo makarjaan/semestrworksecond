@@ -37,6 +37,7 @@ public class GameView extends BaseView  {
                     case LEFT -> controller.left = true;
                     case UP -> controller.up = true;
                     case DOWN -> controller.down = true;
+                    case SPACE -> controller.space = true;
                 }
             });
 
@@ -46,6 +47,7 @@ public class GameView extends BaseView  {
                     case LEFT -> controller.left = false;
                     case UP -> controller.up = false;
                     case DOWN -> controller.down = false;
+                    case SPACE -> controller.space = false;
                 }
             });
 

@@ -27,6 +27,7 @@ public class Player {
     public int id;
     private PlayerDto playerDto;
     private Pistol pistol;
+    private boolean loaded;
     Gson gson = new Gson();
 
     public Player(int x, int y, int id) {
@@ -37,6 +38,7 @@ public class Player {
         playerDto = new PlayerDto(this);
         pistol = new Pistol(x, y);
         pistol.setPistolDto(pistol);
+        loaded = false;
     }
 
     public void setimageSpriteView(String url) {
@@ -160,6 +162,14 @@ public class Player {
     public Pistol getPistol() { return pistol; }
 
     public void setPistol(Pistol pistol) { this.pistol = pistol;}
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
 
     public void stopAnimation() {
         spriteAnimation.stop();
