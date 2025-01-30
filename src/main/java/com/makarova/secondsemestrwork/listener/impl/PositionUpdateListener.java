@@ -24,7 +24,7 @@ public class PositionUpdateListener extends AbstractEventListener {
         if(!this.isInit){
             throw new ServerEventListenerException("Listener has not been initiated yet.");
         }
-
+        /*
         ServerImpl serverImpl = (ServerImpl) server;
         String json = new String(message.getData(), StandardCharsets.UTF_8);
         Type type = new TypeToken<Map<String, Object>>() {}.getType();
@@ -39,9 +39,11 @@ public class PositionUpdateListener extends AbstractEventListener {
         data.put("offsetY", offsetY);
         String jsonSend = gson.toJson(data);
 
+         */
+
         Message sendPosition = MessageFactory.create(
                 MessageType.PLAYER_POSITION_UPDATE_TYPE,
-                jsonSend.getBytes(StandardCharsets.UTF_8)
+                message.getData()
         );
 
         try {

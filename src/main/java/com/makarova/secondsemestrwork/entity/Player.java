@@ -26,6 +26,7 @@ public class Player {
     public int speed;
     public int id;
     private PlayerDto playerDto;
+    private Pistol pistol;
     Gson gson = new Gson();
 
     public Player(int x, int y, int id) {
@@ -51,9 +52,13 @@ public class Player {
     public void moveUp() {
         y -= speed;
         playerDto.setY(y);
+        pistol.setDirection("up");
+        pistol.setY((int) pistol.getY() - speed);
+        pistol.getPistolDto().setDirection("up");
+        pistol.getPistolDto().setY(y);
         spriteAnimation.setOffsetY(144);
         try {
-            sendMessage(playerDto, spriteAnimation.getOffsetY());
+            sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
         } catch (InvalidMessageException e) {
             throw new RuntimeException(e);
         } catch (ClientException e) {
@@ -64,9 +69,13 @@ public class Player {
     public void moveDown() {
         y += speed;
         playerDto.setY(y);
+        pistol.setDirection("down");
+        pistol.setY((int) pistol.getY() + speed);
+        pistol.getPistolDto().setDirection("down");
+        pistol.getPistolDto().setY(y);
         spriteAnimation.setOffsetY(48);
         try {
-            sendMessage(playerDto, spriteAnimation.getOffsetY());
+            sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
         } catch (InvalidMessageException e) {
             throw new RuntimeException(e);
         } catch (ClientException e) {
@@ -77,9 +86,13 @@ public class Player {
     public void moveLeft() {
         x -= speed;
         playerDto.setX(x);
+        pistol.setDirection("left");
+        pistol.setX((int) pistol.getX() - speed);
+        pistol.getPistolDto().setDirection("left");
+        pistol.getPistolDto().setX(x);
         spriteAnimation.setOffsetY(0);
         try {
-            sendMessage(playerDto, spriteAnimation.getOffsetY());
+            sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
         } catch (InvalidMessageException e) {
             throw new RuntimeException(e);
         } catch (ClientException e) {
@@ -90,9 +103,13 @@ public class Player {
     public void moveRight() {
         x += speed;
         playerDto.setX(x);
+        pistol.setDirection("right");
+        pistol.setX((int) (pistol.getX() + speed));
+        pistol.getPistolDto().setDirection("right");
+        pistol.getPistolDto().setX(x);
         spriteAnimation.setOffsetY(96);
         try {
-            sendMessage(playerDto, spriteAnimation.getOffsetY());
+            sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
         } catch (InvalidMessageException e) {
             throw new RuntimeException(e);
         } catch (ClientException e) {
@@ -107,10 +124,11 @@ public class Player {
         return imageSpriteView;
     }
 
-    public void sendMessage(PlayerDto playerDto, int offsetY) throws InvalidMessageException, ClientException {
+    public void sendMessage(PlayerDto playerDto, int offsetY, PistolDto pistolDto) throws InvalidMessageException, ClientException {
         Map<String, Object> data = new HashMap<>();
         data.put("playerDto", playerDto);
         data.put("offsetY", offsetY);
+        data.put("pistolDto", pistolDto);
         String json = gson.toJson(data);
         Message moveMessage = new Message(
                 MessageType.PLAYER_POSITION_UPDATE_TYPE,
@@ -144,6 +162,10 @@ public class Player {
     public int getPrevY() { return prevY; }
 
     public void setPrevY(int prevY) { this.prevY = prevY;}
+
+    public Pistol getPistol() { return pistol; }
+
+    public void setPistol(Pistol pistol) { this.pistol = pistol;}
 
     public void stopAnimation() {
         spriteAnimation.stop();
