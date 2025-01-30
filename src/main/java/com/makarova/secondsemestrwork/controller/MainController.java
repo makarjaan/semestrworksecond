@@ -115,7 +115,32 @@ public class MainController implements MessageReceiverController{
                     updateOtherPlayers(player);
                 }
             }
+            checkCollisions();
+        });
+    }
 
+    private void checkCollisions() {
+        List<ImageView> rocketsToRemove = new ArrayList<>();
+
+        for (Player player : players) {
+            ImageView playerView = playerViews.get(player);
+            ImageView pistolView = pistolsView.get(player);
+
+            if (playerView == null || pistolView == null) continue;
+
+            for (ImageView rocket : rocketImages) {
+                if (playerView.getBoundsInParent().intersects(rocket.getBoundsInParent())) {
+                    rocketsToRemove.add(rocket);
+                    Pistol pistol = player.getPistol();
+                    Image newImage = pistol.getImageLoaded();
+                    pistolView.setImage(newImage);
+                    player.setPistol(pistol);
+                }
+            }
+        }
+        Platform.runLater(() -> {
+            pane.getChildren().removeAll(rocketsToRemove);
+            rocketImages.removeAll(rocketsToRemove);
         });
     }
 
@@ -131,21 +156,21 @@ public class MainController implements MessageReceiverController{
         double playerHeight = imageView.getFitHeight();
         boolean isMoving = false;
 
-        if (right ^ left ^ up ^ down) {
-            if (right && player.getX() + playerWidth + player.getSpeed() <= paneWidth) {
-                player.moveRight();
-                isMoving = true;
-            } else if (left && player.getX() - player.getSpeed() >= 0) {
-                player.moveLeft();
-                isMoving = true;
-            } else if (up && player.getY() - player.getSpeed() >= 0) {
-                player.moveUp();
-                isMoving = true;
-            } else if (down && player.getY() + playerHeight + player.getSpeed() <= paneHeight) {
-                player.moveDown();
-                isMoving = true;
-            }
+
+        if (right && player.getX() + playerWidth + player.getSpeed() <= paneWidth) {
+            player.moveRight();
+            isMoving = true;
+        } else if (left && player.getX() - player.getSpeed() >= 0) {
+            player.moveLeft();
+            isMoving = true;
+        } else if (up && player.getY() - player.getSpeed() >= 0) {
+            player.moveUp();
+            isMoving = true;
+        } else if (down && player.getY() + playerHeight + player.getSpeed() <= paneHeight) {
+            player.moveDown();
+            isMoving = true;
         }
+
 
         if (isMoving) {
             player.startAnimation();
@@ -225,23 +250,6 @@ public class MainController implements MessageReceiverController{
         return imageView;
     }
 
-
-    private void checkCollisions() {
-        for (Player player : players) {
-            if (player.id == localPlayerId) {
-                Bounds playerBounds = player.getImageSpriteView().getBoundsInParent();
-                pane.getChildren().removeIf(node -> {
-                    if (node instanceof ImageView && node != player.getImageSpriteView()) {
-                        Bounds rocketBounds = node.getBoundsInParent();
-                        if (playerBounds.intersects(rocketBounds)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-        }
-    }
 
 
 

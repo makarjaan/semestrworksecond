@@ -8,6 +8,7 @@ public class Pistol {
     private double x, y;
     private ImageView imageView;
     Image image = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\shoot.png");
+    private Image imageLoaded = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\loaded_pistol.png");
     private String direction;
     private int playerId;
     private PistolDto pistolDto;
@@ -35,6 +36,10 @@ public class Pistol {
     public void setX(int x) {
         this.x = x;
         pistolDto.setX(x);
+    }
+
+    public Image getImageLoaded() {
+        return imageLoaded;
     }
 
     public ImageView getImageView() {
