@@ -35,6 +35,8 @@ public class Player {
         this.y = y;
         this.id = id;
         playerDto = new PlayerDto(this);
+        pistol = new Pistol(x, y);
+        pistol.setPistolDto(pistol);
     }
 
     public void setimageSpriteView(String url) {
@@ -54,8 +56,6 @@ public class Player {
         playerDto.setY(y);
         pistol.setDirection("up");
         pistol.setY((int) pistol.getY() - speed);
-        pistol.getPistolDto().setDirection("up");
-        pistol.getPistolDto().setY(y);
         spriteAnimation.setOffsetY(144);
         try {
             sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
@@ -71,8 +71,6 @@ public class Player {
         playerDto.setY(y);
         pistol.setDirection("down");
         pistol.setY((int) pistol.getY() + speed);
-        pistol.getPistolDto().setDirection("down");
-        pistol.getPistolDto().setY(y);
         spriteAnimation.setOffsetY(48);
         try {
             sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
@@ -88,8 +86,6 @@ public class Player {
         playerDto.setX(x);
         pistol.setDirection("left");
         pistol.setX((int) pistol.getX() - speed);
-        pistol.getPistolDto().setDirection("left");
-        pistol.getPistolDto().setX(x);
         spriteAnimation.setOffsetY(0);
         try {
             sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());
@@ -105,8 +101,6 @@ public class Player {
         playerDto.setX(x);
         pistol.setDirection("right");
         pistol.setX((int) (pistol.getX() + speed));
-        pistol.getPistolDto().setDirection("right");
-        pistol.getPistolDto().setX(x);
         spriteAnimation.setOffsetY(96);
         try {
             sendMessage(playerDto, spriteAnimation.getOffsetY(), pistol.getPistolDto());

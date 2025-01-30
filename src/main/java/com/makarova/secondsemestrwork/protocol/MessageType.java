@@ -10,6 +10,7 @@ public class MessageType {
     public static final int PLAYER_POSITION_UPDATE_TYPE = 4;
     public static final int INIT_ROCKET_TYPE = 5;
     public static final int GENERATE_ROCKET_TYPE = 6;
+    public static final int PISTO_UPDATE_TYPE = 7;
 
     public static List<Integer> getAllTypes() {
         return Arrays.asList(
@@ -18,7 +19,8 @@ public class MessageType {
                 SET_PLAYER_POSITION_TYPE,
                 PLAYER_POSITION_UPDATE_TYPE,
                 INIT_ROCKET_TYPE,
-                GENERATE_ROCKET_TYPE
+                GENERATE_ROCKET_TYPE,
+                PISTO_UPDATE_TYPE
         );
     }
 }

@@ -25,6 +25,7 @@ public class Pistol {
 
     public void setY(int y) {
         this.y = y;
+        pistolDto.setY(y);
     }
 
     public double getX() {
@@ -33,6 +34,7 @@ public class Pistol {
 
     public void setX(int x) {
         this.x = x;
+        pistolDto.setX(x);
     }
 
     public ImageView getImageView() {
@@ -41,7 +43,10 @@ public class Pistol {
 
     public String getDirection() { return direction; }
 
-    public void setDirection(String direction) { this.direction = direction; }
+    public void setDirection(String direction) {
+        this.direction = direction;
+        pistolDto.setDirection(direction);
+    }
 
     public int getPlayerId() {
         return playerId;
@@ -55,7 +60,7 @@ public class Pistol {
         return pistolDto;
     }
 
-    public void setPistolDto(PistolDto pistolDto) {
-        this.pistolDto = pistolDto;
+    public void setPistolDto(Pistol pistol) {
+        this.pistolDto = new PistolDto(this);
     }
 }

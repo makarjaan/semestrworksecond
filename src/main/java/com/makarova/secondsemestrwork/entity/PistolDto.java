@@ -21,7 +21,7 @@ public class PistolDto {
     }
 
     public int getX() {
-        return x;
+        return this.x;
     }
 
     public void setX(int x) {

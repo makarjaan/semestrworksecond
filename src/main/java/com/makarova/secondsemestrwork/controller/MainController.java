@@ -8,7 +8,10 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.makarova.secondsemestrwork.entity.*;
+import com.makarova.secondsemestrwork.exceptions.ClientException;
+import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
+import com.makarova.secondsemestrwork.protocol.MessageFactory;
 import com.makarova.secondsemestrwork.protocol.MessageType;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -163,7 +166,9 @@ public class MainController implements MessageReceiverController{
 
     private void updateOtherPlayers(Player player) {
         ImageView imageView = playerViews.get(player);
-        if (imageView == null) return;
+        ImageView pistolImageView = pistolsView.get(player);
+        if (imageView == null || pistolImageView == null) return;
+
         boolean isMoving = player.getPrevX() != player.getX() || player.getPrevY() != player.getY();
         if (isMoving) {
             player.startAnimation();
@@ -176,15 +181,12 @@ public class MainController implements MessageReceiverController{
         player.setPrevX(player.getX());
         player.setPrevY(player.getY());
 
-        ImageView pistolImageView = pistolsView.get(player);
-        if (pistolImageView == null) return;
 
-        Pistol pistol = player.getPistol();
-        if (pistol == null) return;
-
-        String direction = pistol.getDirection();
-        if (direction != null) {
-            updatePistolPosition(player, pistolImageView, direction);
+        pistolImageView.setLayoutX(player.getPistol().getX());
+        pistolImageView.setLayoutY(player.getPistol().getY());
+        String diraction = player.getPistol().getDirection();
+        if (diraction != null) {
+            updatePistolPosition(player, pistolImageView, diraction);
         }
     }
 
@@ -207,10 +209,9 @@ public class MainController implements MessageReceiverController{
                 case "down" -> { offsetX = 64; offsetY = 121; rotation = 180; }
             }
         }
-
+        pistolImageView.setRotate(rotation);
         pistolImageView.setLayoutX(player.getPistol().getX() + offsetX);
         pistolImageView.setLayoutY(player.getPistol().getY() + offsetY);
-        pistolImageView.setRotate(rotation);
     }
 
     private ImageView createRocketImage(double x, double y) {
@@ -289,22 +290,17 @@ public class MainController implements MessageReceiverController{
                 pistol.setX(pistolDto.getX());
                 pistol.setY(pistolDto.getY());
                 pistol.setDirection(pistolDto.getDirection());
+                player.setPistol(pistol);
 
                 Platform.runLater(() -> {
                     ImageView imageView = playerViews.get(player);
-                    if (imageView != null) {
-                        pane.getChildren().remove(imageView);
-                    }
-                    imageView = player.getImageSpriteView();
                     imageView.setLayoutX(player.getX());
                     imageView.setLayoutY(player.getY());
                     player.spriteAnimation.setOffsetY(offsetY);
-                    if (!pane.getChildren().contains(imageView)) {
-                        pane.getChildren().add(imageView);
-                    }
                     playerViews.put(player, imageView);
                 });
             }
+
 
             case MessageType.INIT_ROCKET_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
