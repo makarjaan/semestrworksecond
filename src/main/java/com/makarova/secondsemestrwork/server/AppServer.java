@@ -16,6 +16,8 @@ public class AppServer {
             server.registerListener(new InitRocketListener());
             server.registerListener(new GenerateRocketListener());
             server.registerListener(new BulletUpdateListener());
+            server.registerListener(new HitPlayerListener());
+            server.registerListener(new ChangeLifeCountListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

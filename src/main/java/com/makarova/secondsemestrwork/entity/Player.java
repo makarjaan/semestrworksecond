@@ -6,6 +6,7 @@ import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageType;
 import com.makarova.secondsemestrwork.sprite.SpriteAnimation;
+import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,7 +29,11 @@ public class Player {
     private PlayerDto playerDto;
     private Pistol pistol;
     private boolean loaded;
+    private int lifeScore;
+    private boolean movementEnabled;
+    private boolean isHit = false;
     Gson gson = new Gson();
+    private Timeline recoveryTimeline;
 
     public Player(int x, int y, int id) {
         this.speed = 2;
@@ -38,7 +43,9 @@ public class Player {
         playerDto = new PlayerDto(this);
         pistol = new Pistol(x, y);
         pistol.setPistolDto(pistol);
+        lifeScore = 10;
         loaded = false;
+        setMovementEnabled(true);
     }
 
     public void setimageSpriteView(String url) {
@@ -113,11 +120,13 @@ public class Player {
         }
     }
 
-    public ImageView getImageSpriteView() {
-        if (imageSpriteView == null) {
-            imageSpriteView = new ImageView();
-        }
-        return imageSpriteView;
+    public void stopAnimation() {
+        spriteAnimation.stop();
+        imageSpriteView.setViewport(new Rectangle2D(0, spriteAnimation.getOffsetY(), 47, 48));
+    }
+
+    public void startAnimation() {
+        spriteAnimation.play();
     }
 
     public void sendMessage(PlayerDto playerDto, int offsetY, PistolDto pistolDto) throws InvalidMessageException, ClientException {
@@ -133,6 +142,13 @@ public class Player {
         getApplication().getGameClient().sendMessage(moveMessage);
     }
 
+    public ImageView getImageSpriteView() {
+        if (imageSpriteView == null) {
+            imageSpriteView = new ImageView();
+        }
+        return imageSpriteView;
+    }
+
     public PlayerDto getPlayerDto() {
         return playerDto;
     }
@@ -141,12 +157,14 @@ public class Player {
 
     public void setX(int x) {
         this.x = x;
+        playerDto.setX(x);
     }
 
     public int getY() { return y;}
 
     public void setY(int y) {
         this.y = y;
+        playerDto.setY(y);
     }
 
     public int getSpeed() {
@@ -176,13 +194,43 @@ public class Player {
         playerDto.setLoaded(loaded);
     }
 
-    public void stopAnimation() {
-        spriteAnimation.stop();
-        imageSpriteView.setViewport(new Rectangle2D(0, spriteAnimation.getOffsetY(), 47, 48));
+    public int getLifeScore() {
+        return lifeScore;
     }
 
-    public void startAnimation() {
-        spriteAnimation.play();
+    public void setLifeScore(int lifeScore) {
+        this.lifeScore = lifeScore;
+        playerDto.setLifeScore(lifeScore);
     }
 
+    public void minusLifeScore() {
+        this.lifeScore = this.lifeScore - 1;
+        playerDto.setLifeScore(lifeScore);
+    }
+
+    public boolean isMovementEnabled() {
+        return movementEnabled;
+    }
+
+    public void setMovementEnabled(boolean movementEnabled) {
+        this.movementEnabled = movementEnabled;
+        playerDto.setMovementEnabled(movementEnabled);
+    }
+
+    public boolean isHit() {
+        return isHit;
+    }
+
+    public void setHit(boolean hit) {
+        isHit = hit;
+        playerDto.setHit(hit);
+    }
+
+    public Timeline getRecoveryTimeline() {
+        return recoveryTimeline;
+    }
+
+    public void setRecoveryTimeline(Timeline recoveryTimeline) {
+        this.recoveryTimeline = recoveryTimeline;
+    }
 }

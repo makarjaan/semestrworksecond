@@ -56,7 +56,6 @@ public class GameClient implements Client {
     @Override
     public void sendMessage(Message message) throws ClientException, InvalidMessageException {
         try {
-            System.out.println("Отправка сообщения серверу: \n" + MessageProtocol.toReadableString(message));
             thread.getOut().write(MessageProtocol.getBytes(message));
             thread.getOut().flush();
         } catch (IOException e) {
@@ -117,7 +116,7 @@ public class GameClient implements Client {
                         gameClient.idPlayer = player.getId();
                     }
 
-                    System.out.println("Ответ от сервера: " + MessageProtocol.toReadableString(message));
+                    //    System.out.println("Ответ от сервера: " + MessageProtocol.toReadableString(message));
 
                 }
             } catch (InvalidMessageException e) {

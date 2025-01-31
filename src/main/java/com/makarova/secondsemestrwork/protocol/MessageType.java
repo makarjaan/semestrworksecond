@@ -11,7 +11,8 @@ public class MessageType {
     public static final int INIT_ROCKET_TYPE = 5;
     public static final int GENERATE_ROCKET_TYPE = 6;
     public static final int BULLET_UPDATE_TYPE = 7;
-    public static final int PISTOL_UPDATE_TYPE = 8;
+    public static final int HIT_PLAYER_TYPE = 8;
+    public static final int CHANGE_LIFE_COUNT_TYPE = 9;
     public static List<Integer> getAllTypes() {
         return Arrays.asList(
                 PLAYER_CONNECTION_TYPE,
@@ -21,7 +22,8 @@ public class MessageType {
                 INIT_ROCKET_TYPE,
                 GENERATE_ROCKET_TYPE,
                 BULLET_UPDATE_TYPE,
-                PISTOL_UPDATE_TYPE
+                HIT_PLAYER_TYPE,
+                CHANGE_LIFE_COUNT_TYPE
         );
     }
 }

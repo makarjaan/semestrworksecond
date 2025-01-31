@@ -5,58 +5,73 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 
-
-<AnchorPane fx:id="anchorPane" maxHeight="Infinity" maxWidth="Infinity" minHeight="0.0" minWidth="0.0" prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.makarova.secondsemestrwork.controller.MainController">
+<AnchorPane fx:id="anchorPane" maxHeight="Infinity" maxWidth="Infinity" minHeight="0.0" minWidth="0.0" prefHeight="864.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.makarova.secondsemestrwork.controller.MainController">
    <children>
-      <ImageView fitHeight="813.0" fitWidth="1000.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="871.0" fitWidth="1067.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../image/background/field_play.png" />
+            <Image url="@../image/background/field.png" />
          </image>
       </ImageView>
-      <ImageView fitHeight="88.0" fitWidth="622.0" layoutX="188.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../image/background/wall_above_below.png" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="805.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../image/background/сorners.png" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="803.0" layoutY="116.0" pickOnBounds="true" preserveRatio="true" x="3.0">
-         <image>
-            <Image url="@../image/background/wall_edges.png" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="141.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../image/background/сorners.png" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="137.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true" x="3.0">
-         <image>
-            <Image url="@../image/background/wall_edges.png" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="98.0" fitWidth="655.0" layoutX="163.0" layoutY="655.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="88.0" fitWidth="622.0" layoutX="190.0" layoutY="88.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../image/background/wall_above_below.png" />
          </image>
       </ImageView>
-      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="139.0" layoutY="652.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="809.0" layoutY="88.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../image/background/сorners.png" />
          </image>
       </ImageView>
-      <ImageView fitHeight="88.0" fitWidth="74.0" layoutX="806.0" layoutY="650.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="806.0" layoutY="162.0" pickOnBounds="true" preserveRatio="true" x="3.0">
+         <image>
+            <Image url="@../image/background/wall_edges.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="119.0" layoutY="88.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../image/background/сorners.png" />
          </image>
       </ImageView>
-      <Pane fx:id="pane" prefHeight="570.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="165.0" AnchorPane.topAnchor="100.0">
-         <children>
-
-         </children>
-      </Pane>
+      <ImageView fitHeight="546.0" fitWidth="85.0" layoutX="116.0" layoutY="160.0" pickOnBounds="true" preserveRatio="true" x="3.0">
+         <image>
+            <Image url="@../image/background/wall_edges.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="98.0" fitWidth="655.0" layoutX="160.0" layoutY="708.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/wall_above_below.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="89.0" layoutX="117.0" layoutY="705.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="88.0" fitWidth="74.0" layoutX="809.0" layoutY="703.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/background/сorners.png" />
+         </image>
+      </ImageView>
+      <Pane fx:id="pane" layoutX="183.8" layoutY="120.0" prefHeight="568.0" AnchorPane.leftAnchor="184.0" AnchorPane.rightAnchor="180.0" AnchorPane.topAnchor="155.0" />
+      <ImageView fx:id="lifeRed" fitHeight="46.0" fitWidth="195.0" layoutX="14.0" layoutY="59.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/player/playerRed/10.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="lifeBlue" fitHeight="150.0" fitWidth="200.0" layoutX="772.0" layoutY="803.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/player/playerBlue/10.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="lifeGreen" fitHeight="150.0" fitWidth="200.0" layoutX="772.0" layoutY="59.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/player/playerGreen/10.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="lifeYellow" fitHeight="150.0" fitWidth="200.0" layoutX="19.0" layoutY="803.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/player/playerYellow/10.png" />
+         </image>
+      </ImageView>
    </children>
 </AnchorPane>

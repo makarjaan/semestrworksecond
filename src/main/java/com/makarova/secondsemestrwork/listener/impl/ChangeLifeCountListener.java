@@ -9,20 +9,20 @@ import com.makarova.secondsemestrwork.protocol.MessageType;
 
 import java.rmi.ServerException;
 
-public class PistolUpdateListener extends AbstractEventListener {
+public class ChangeLifeCountListener extends AbstractEventListener {
     @Override
     public void handle(int connectionId, Message message) throws ServerEventListenerException, InvalidMessageException {
         if(!this.isInit){
             throw new ServerEventListenerException("Listener has not been initiated yet.");
         }
 
-        Message sendPosition = MessageFactory.create(
-                MessageType.PISTOL_UPDATE_TYPE,
+        Message changePlayerLifeOfOthertsMessage = MessageFactory.create(
+                MessageType.CHANGE_LIFE_COUNT_TYPE,
                 message.getData()
         );
 
         try {
-            this.server.sendMessageToAllExceptSender(sendPosition, connectionId);
+            server.sendMessageToAllExceptSender(changePlayerLifeOfOthertsMessage, connectionId);
         } catch (ServerException e) {
             e.printStackTrace();
         }
@@ -30,6 +30,6 @@ public class PistolUpdateListener extends AbstractEventListener {
 
     @Override
     public int getType() {
-        return MessageType.PISTOL_UPDATE_TYPE;
+        return MessageType.CHANGE_LIFE_COUNT_TYPE;
     }
 }

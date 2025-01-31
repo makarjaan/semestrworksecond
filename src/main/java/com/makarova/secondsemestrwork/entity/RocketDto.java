@@ -1,8 +1,5 @@
 package com.makarova.secondsemestrwork.entity;
 
-
-import javax.swing.text.html.ImageView;
-
 public class RocketDto {
 
     private int x;

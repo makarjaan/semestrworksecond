@@ -1,7 +1,6 @@
 package com.makarova.secondsemestrwork.controller;
 
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -33,10 +32,19 @@ public class MainController implements MessageReceiverController{
 
     @FXML
     private Pane pane;
+    @FXML
+    private ImageView lifeBlue;
+    @FXML
+    private ImageView lifeGreen;
+    @FXML
+    private ImageView lifeRed;
+    @FXML
+    private ImageView lifeYellow;
 
     private Map<Player, ImageView> playerViews = new HashMap<>();
     private Map<Player, ImageView> pistolsView = new HashMap<>();
     private Map<Player, ImageView> bulletViews = new HashMap<>();
+    private Map<Player, ImageView> lifeViews = new HashMap<>();
     List<Player> players = new ArrayList<>();
     List<ImageView> rocketImages = new ArrayList<>();
     private int localPlayerId;
@@ -83,11 +91,25 @@ public class MainController implements MessageReceiverController{
         for (Player p : players) {
             Platform.runLater(() -> {
                 if (p.getId() == 0) {
-                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\player\\red.png");
+                    String imagePath = "/image/player/playerRed/red.png";
+                    p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
                     p.spriteAnimation.setOffsetY(96);
-                } else {
-                    p.setimageSpriteView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\player\\blue.png");
+                    lifeViews.put(p, lifeRed);
+                } else if (p.getId() == 1) {
+                    String imagePath = "/image/player/playerBlue/blue.png";
+                    p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
+                    lifeViews.put(p, lifeBlue);
+                } else if (p.getId() == 2) {
+                    String imagePath = "/image/player/playerGreen/green.png";
+                    p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
+                    p.spriteAnimation.setOffsetY(96);
+                    lifeViews.put(p, lifeGreen);
+                } else if (p.getId() == 3) {
+                    String imagePath = "/image/player/playerYellow/yellow.png";
+                    p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
+                    lifeViews.put(p, lifeYellow);
                 }
+
                 if (playerViews.containsKey(p)) {
                     pane.getChildren().remove(playerViews.get(p));
                 }
@@ -174,30 +196,40 @@ public class MainController implements MessageReceiverController{
         if (diraction != null) {
             updatePistolPosition(player, pistolImageView, diraction);
         }
+
+        ImageView lifeImageView = lifeViews.get(player);
+        if (lifeImageView == null) return;
+        if (player.getId() == 0) {
+            lifeRed.setImage(lifeImageView.getImage());
+        } else if (player.getId() == 1) {
+            lifeBlue.setImage(lifeImageView.getImage());
+        }
     }
 
     private void updateOtherPlayers(Player player) {
-        ImageView imageView = playerViews.get(player);
-        ImageView pistolImageView = pistolsView.get(player);
-        if (imageView == null || pistolImageView == null) return;
+        if (player.isMovementEnabled()) {
+            ImageView imageView = playerViews.get(player);
+            ImageView pistolImageView = pistolsView.get(player);
+            if (imageView == null || pistolImageView == null) return;
 
-        boolean isMoving = player.getPrevX() != player.getX() || player.getPrevY() != player.getY();
-        if (isMoving) {
-            player.startAnimation();
-        } else {
-            player.stopAnimation();
-        }
-        imageView.setLayoutX(player.getX());
-        imageView.setLayoutY(player.getY());
+            boolean isMoving = player.getPrevX() != player.getX() || player.getPrevY() != player.getY();
+            if (isMoving) {
+                player.startAnimation();
+            } else {
+                player.stopAnimation();
+            }
+            imageView.setLayoutX(player.getX());
+            imageView.setLayoutY(player.getY());
 
-        player.setPrevX(player.getX());
-        player.setPrevY(player.getY());
+            player.setPrevX(player.getX());
+            player.setPrevY(player.getY());
 
-        pistolImageView.setLayoutX(player.getPistol().getX());
-        pistolImageView.setLayoutY(player.getPistol().getY());
-        String diraction = player.getPistol().getDirection();
-        if (diraction != null) {
-            updatePistolPosition(player, pistolImageView, diraction);
+            pistolImageView.setLayoutX(player.getPistol().getX());
+            pistolImageView.setLayoutY(player.getPistol().getY());
+            String diraction = player.getPistol().getDirection();
+            if (diraction != null) {
+                updatePistolPosition(player, pistolImageView, diraction);
+            }
         }
     }
 
@@ -253,10 +285,18 @@ public class MainController implements MessageReceiverController{
     }
 
     private ImageView createRocketImage(double x, double y) {
-        if ((x == 77 & y == 68) || (x == 486 & y == 438) ||
-                (x == 486 & y == 68) || (x == 77 & y == 438)) {
-            return null; }
-        Image image = new Image("file:C:/Users/arina/IdeaProjects/secondsemestrwork/src/main/resources/image/boosters/rocket.png");
+        int[][] restrictedCoordinates = {{77, 68}, {486, 438}, {486, 68}, {77, 438}};
+
+        int radius = 64;
+        for (int[] restricted : restrictedCoordinates) {
+            int restrictedX = restricted[0];
+            int restrictedY = restricted[1];
+            if (Math.abs(x - restrictedX) <= radius && Math.abs(y - restrictedY) <= radius) {
+                return null;
+            }
+        }
+        String imagePath = "/image/boosters/rocket.png";
+        Image image = new Image(getClass().getResource(imagePath).toExternalForm());
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(20);
         imageView.setFitHeight(35);
@@ -267,12 +307,16 @@ public class MainController implements MessageReceiverController{
     }
 
     private void shoot(Player player) {
-        player.setLoaded(false);
+        if (!player.isLoaded()) {
+            return;
+        }
         ImageView pistolImageView = pistolsView.get(player);
+        player.setLoaded(false);
         pistolImageView.setImage(player.getPistol().getImage());
         pistolsView.put(player, pistolImageView);
 
-        ImageView bulletImageView = new ImageView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\bullet.png");
+        String imagePath = "/image/boosters/bullet.png";
+        ImageView bulletImageView = new ImageView(getClass().getResource(imagePath).toExternalForm());
         bulletImageView.setFitHeight(75);
         bulletImageView.setFitWidth(25);
         bulletImageView.setLayoutX(pistolsView.get(player).getLayoutX());
@@ -280,78 +324,166 @@ public class MainController implements MessageReceiverController{
         String bulletDirection = player.getPistol().getDirection();
         pane.getChildren().add(bulletImageView);
         Timeline timeline = new Timeline();
-        switch (bulletDirection) {
-            case "right" -> {
-                bulletImageView.setRotate(90);
-                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 78);
-            }
-            case "left" -> {
-                bulletImageView.setRotate(-90);
-                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 82);
-            }
-            case "up" -> {
-                bulletImageView.setRotate(0);
-            }
-            case "down" -> {
-                bulletImageView.setRotate(180);
-                bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 3);
-                bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 80);
-            }
-        }
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(10), e -> {
+        if (bulletDirection != null) {
             switch (bulletDirection) {
-                case "left" -> {
-                    bulletImageView.setLayoutX(bulletImageView.getLayoutX() - 5);
-                }
                 case "right" -> {
-                    bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 5);
+                    bulletImageView.setRotate(90);
+                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 78);
+                }
+                case "left" -> {
+                    bulletImageView.setRotate(-90);
+                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 82);
                 }
                 case "up" -> {
-                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() - 5);
+                    bulletImageView.setRotate(0);
                 }
                 case "down" -> {
-                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 5);
+                    bulletImageView.setRotate(180);
+                    bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 3);
+                    bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 80);
                 }
             }
 
-            BulletDto bulletDto = new BulletDto((int) bulletImageView.getLayoutX(),
-                    (int) bulletImageView.getLayoutY(), bulletDirection);
-            bulletDto.setSenderPlayer(player.getPlayerDto());
 
-            try {
-                Message bulletMessage = MessageFactory.create(
-                        MessageType.BULLET_UPDATE_TYPE,
-                        gson.toJson(bulletDto).getBytes());
-                getApplication().getGameClient().sendMessage(bulletMessage);
-            } catch (InvalidMessageException ex) {
-                ex.printStackTrace();
-            } catch (ClientException ex) {
-                ex.printStackTrace();
-            }
-
-
-            for (Player p : players) {
-                ImageView target = playerViews.get(p);
-                if (target != null && bulletImageView.getBoundsInParent().intersects(target.getBoundsInParent())) {
-                    pane.getChildren().remove(bulletImageView);
-                    timeline.stop();
-                    return;
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(10), e -> {
+                switch (bulletDirection) {
+                    case "left" -> {
+                        bulletImageView.setLayoutX(bulletImageView.getLayoutX() - 5);
+                    }
+                    case "right" -> {
+                        bulletImageView.setLayoutX(bulletImageView.getLayoutX() + 5);
+                    }
+                    case "up" -> {
+                        bulletImageView.setLayoutY(bulletImageView.getLayoutY() - 5);
+                    }
+                    case "down" -> {
+                        bulletImageView.setLayoutY(bulletImageView.getLayoutY() + 5);
+                    }
                 }
-            }
-            /*
-            for (ImageView wall : walls) {
-                if (bulletImageView.getBoundsInParent().intersects(wall.getBoundsInParent())) {
-                    pane.getChildren().remove(bulletImageView);
-                    ((Timeline) e.getSource()).stop();
-                    return;
-                }
-            }
 
-             */
-        });
-        timeline.getKeyFrames().add(keyFrame);
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+                BulletDto bulletDto = new BulletDto((int) bulletImageView.getLayoutX(),
+                        (int) bulletImageView.getLayoutY(), bulletDirection);
+                bulletDto.setSenderPlayer(player.getPlayerDto());
+
+                try {
+                    Message bulletMessage = MessageFactory.create(
+                            MessageType.BULLET_UPDATE_TYPE,
+                            gson.toJson(bulletDto).getBytes());
+                    getApplication().getGameClient().sendMessage(bulletMessage);
+                } catch (InvalidMessageException ex) {
+                    ex.printStackTrace();
+                } catch (ClientException ex) {
+                    ex.printStackTrace();
+                }
+
+
+                for (Player p : players) {
+                    ImageView target = playerViews.get(p);
+                    if (target != null && bulletImageView.getBoundsInParent().intersects(target.getBoundsInParent())) {
+                        if (p.isHit()) {
+                            return;
+                        }
+                        p.setHit(true);
+                        p.minusLifeScore();
+                        updateLifeImage(p);
+                        p.setMovementEnabled(false);
+                        ImageView pistolImageView2 = pistolsView.get(p);
+                        pistolImageView2.setVisible(false);
+                        ImageView playerImageView = playerViews.get(p);
+                        playerImageView.setVisible(false);
+                        String hitImagePath = "";
+
+                        if (p.getLifeScore() < 0) {
+                            hitImagePath = "/image/player/dead.png";
+                        } else {
+                            switch (p.getId()) {
+                                case 0 -> hitImagePath = "/image/player/playerRed/shooted.png";
+                                case 1 -> hitImagePath = "/image/player/playerBlue/shooted.png";
+                                case 2 -> hitImagePath = "/image/player/playerGreen/shooted.png";
+                                case 3 -> hitImagePath = "/image/player/playerYellow/shooted.png";
+                            }
+                        }
+                        Image hitImage = new Image(getClass().getResource(hitImagePath).toExternalForm());
+                        ImageView hitImageView = new ImageView(hitImage);
+                        hitImageView.setLayoutX(playerImageView.getLayoutX());
+                        hitImageView.setLayoutY(playerImageView.getLayoutY());
+                        hitImageView.setFitHeight(83);
+                        hitImageView.setFitWidth(49);
+                        pane.getChildren().add(hitImageView);
+                        bulletViews.put(p, bulletImageView);
+
+                        try {
+                            Message hitPlayerMessage = MessageFactory.create(
+                                    MessageType.HIT_PLAYER_TYPE,
+                                    gson.toJson(p.getPlayerDto()).getBytes()
+                            );
+                            getApplication().getGameClient().sendMessage(hitPlayerMessage);
+                        } catch (InvalidMessageException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (ClientException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        pane.getChildren().remove(bulletImageView);
+                        timeline.stop();
+
+                        resetPlayerState(p, hitImageView);
+                        return;
+                    }
+                }
+                /*
+                for (ImageView wall : walls) {
+                    if (bulletImageView.getBoundsInParent().intersects(wall.getBoundsInParent())) {
+                        pane.getChildren().remove(bulletImageView);
+                        ((Timeline) e.getSource()).stop();
+                        return;
+                    }
+                }
+
+                 */
+            });
+            timeline.getKeyFrames().add(keyFrame);
+            timeline.setCycleCount(Animation.INDEFINITE);
+            timeline.play();
+        }
+    }
+
+    private void updateLifeImage(Player p) {
+        ImageView imageView = lifeViews.get(p);
+        if (imageView != null) {
+            String imagePath = "";
+            switch (p.getId()) {
+                case 0:
+                    imagePath = "/image/player/playerRed/" + p.getLifeScore() + ".png";
+                    break;
+                case 1:
+                    imagePath = "/image/player/playerBlue/" + p.getLifeScore() + ".png";
+                    break;
+                case 2:
+                    imagePath = "/image/player/playerGreen/" + p.getLifeScore() + ".png";
+                    break;
+                case 3:
+                    imagePath = "/image/player/playerYellow/" + p.getLifeScore() + ".png";
+                    break;
+            }
+            imageView.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
+        }
+    }
+
+    private void resetPlayerState(Player player, ImageView hitImageView) {
+        if (player.getRecoveryTimeline() != null) {
+            player.getRecoveryTimeline().stop();
+        }
+        Timeline recoveryTimeline = new Timeline(new KeyFrame(Duration.millis(4000), event -> {
+            playerViews.get(player).setVisible(true);
+            pistolsView.get(player).setVisible(true);
+            pane.getChildren().remove(hitImageView);
+            player.setMovementEnabled(true);
+            player.setLoaded(true);
+            player.setHit(false);
+        }));
+        player.setRecoveryTimeline(recoveryTimeline);
+        recoveryTimeline.play();
     }
 
 
@@ -387,7 +519,6 @@ public class MainController implements MessageReceiverController{
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 Type type = new TypeToken<Map<String, Object>>() {}.getType();
                 Map<String, Object> receivedData = gson.fromJson(json, type);
-                System.out.println(json);
 
                 PlayerDto playerDto = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
                 PistolDto pistolDto = gson.fromJson(gson.toJson(receivedData.get("pistolDto")), PistolDto.class);
@@ -451,14 +582,13 @@ public class MainController implements MessageReceiverController{
                 }
 
                 Platform.runLater(() -> {
-                    ImageView bulletImageView = bulletViews.get(player);
-                    if (bulletImageView == null) {
-                        bulletImageView = new ImageView("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\bullet.png");
-                        bulletImageView.setFitHeight(75);
-                        bulletImageView.setFitWidth(25);
-                        pane.getChildren().add(bulletImageView);
-                        bulletViews.put(player, bulletImageView);
-                    }
+                    pane.getChildren().removeIf(node -> node instanceof ImageView && bulletViews.containsValue(node));
+                    bulletViews.clear();
+                    ImageView bulletImageView = new ImageView(new Image(getClass().getResource("/image/boosters/bullet.png").toExternalForm()));
+                    bulletImageView.setFitHeight(75);
+                    bulletImageView.setFitWidth(25);
+                    pane.getChildren().add(bulletImageView);
+                    bulletViews.put(player, bulletImageView);
 
                     bulletImageView.setLayoutX(bulletDto.getX());
                     bulletImageView.setLayoutY(bulletDto.getY());
@@ -472,7 +602,46 @@ public class MainController implements MessageReceiverController{
                 });
             }
 
+            case MessageType.HIT_PLAYER_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                PlayerDto playerDto = gson.fromJson(json, PlayerDto.class);
+                Player player = players.get(playerDto.getId());
+                if (!player.isHit()) player.minusLifeScore();
+                ImageView playerImageView = playerViews.get(player);
+                Platform.runLater(() -> {
+                    ImageView imageView = lifeViews.get(player);
+                    if (imageView != null) {
+                        String imagePath = "";
+                        switch (player.getId()) {
+                            case 0 -> imagePath = "/image/player/playerRed/" + player.getLifeScore() + ".png";
+                            case 1 -> imagePath = "/image/player/playerBlue/" + player.getLifeScore() + ".png";
+                            case 2 -> imagePath = "/image/player/playerGreen/" + player.getLifeScore() + ".png";
+                            case 3 -> imagePath = "/image/player/playerYellow/" + player.getLifeScore() + ".png";
+                        }
+                        imageView.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
+                    }
 
+                    player.setMovementEnabled(false);
+                    ImageView pistolImageView = pistolsView.get(player);
+                    playerImageView.setVisible(false);
+                    pistolImageView.setVisible(false);
+                    String hitImagePath = "";
+                    switch (player.getId()) {
+                        case 0 -> hitImagePath = "/image/player/playerRed/shooted.png";
+                        case 1 -> hitImagePath = "/image/player/playerBlue/shooted.png";
+                        case 2 -> hitImagePath = "/image/player/playerGreen/shooted.png";
+                        case 3 -> hitImagePath = "/image/player/playerYellow/shooted.png";
+                    }
+                    Image hitImage = new Image(getClass().getResource(hitImagePath).toExternalForm());
+                    ImageView hitImageView = new ImageView(hitImage);
+                    hitImageView.setLayoutX(playerImageView.getLayoutX());
+                    hitImageView.setLayoutY(playerImageView.getLayoutY());
+                    hitImageView.setFitHeight(83);
+                    hitImageView.setFitWidth(49);
+                    pane.getChildren().add(hitImageView);
+                    resetPlayerState(player, hitImageView);
+                });
+            }
         }
     }
 }

@@ -29,23 +29,20 @@ public class GenerateRocketListener extends AbstractEventListener {
     }
 
     private void generateRocketPeriodically(RocketDto rocketDto) {
-        System.out.println("Запуск генерации ракеты");  // Выводим сразу перед запуском
+        System.out.println("Запуск генерации ракеты");
 
         RocketDto newRocket = new RocketDto((int) (Math.random() * rocketDto.getX()), (int) (Math.random() * rocketDto.getY()));
         String response = gson.toJson(newRocket);
         System.out.println("одна ракета " + response);
 
-        // Печатаем, если задача выполняется
         try {
-            // Создание сообщения
             Message rocketGenerationMessage = MessageFactory.create(
                     MessageType.GENERATE_ROCKET_TYPE,
                     response.getBytes(StandardCharsets.UTF_8)
             );
 
-            // Отправка сообщения
             this.server.sendBroadcastMessage(rocketGenerationMessage);
-            System.out.println("Сообщение о новой ракете отправлено: " + response);  // Это должно сработать
+            System.out.println("Сообщение о новой ракете отправлено: " + response);
 
         } catch (InvalidMessageException e) {
             System.err.println("Ошибка с сообщением: " + e.getMessage());

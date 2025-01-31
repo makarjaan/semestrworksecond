@@ -76,19 +76,38 @@ public class ServerImpl implements Server {
                             response.getBytes(StandardCharsets.UTF_8)
                     );
 
-                    sendBroadcastMessage(rocketGenerationMessage);
-                    System.out.println("Сообщение о новой ракете отправлено: " + response);
+                    boolean sent = false;
+                    int retryCount = 3;
+                    while (!sent && retryCount > 0) {
+                        try {
+                            sendBroadcastMessage(rocketGenerationMessage);
+                            System.out.println("Сообщение о новой ракете отправлено: " + response);
+                            sent = true;
+                        } catch (ServerException e) {
+                            retryCount--;
+                            System.err.println("Ошибка с сервером. Попыток осталось: " + retryCount);
+                            if (retryCount == 0) {
+                                System.err.println("Не удалось отправить сообщение после 3 попыток.");
+                            }
+                        }
+                        if (!sent && retryCount > 0) {
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                    }
 
                 } catch (InvalidMessageException e) {
                     System.err.println("Ошибка с сообщением: " + e.getMessage());
-                } catch (ServerException e) {
-                    System.err.println("Ошибка с сервером: " + e.getMessage());
                 }
             }
         };
 
         timer.scheduleAtFixedRate(task, 8000, 4000);
     }
+
 
 
     @Override

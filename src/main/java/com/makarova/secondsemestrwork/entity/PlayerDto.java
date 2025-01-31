@@ -5,6 +5,9 @@ public class PlayerDto {
     private int x;
     private int y;
     private boolean loaded = false;
+    private int lifeScore;
+    private boolean movementEnabled;
+    private boolean isHit = false;
 
     public PlayerDto(Player player) {
         this.connectionId = player.getId();
@@ -18,10 +21,6 @@ public class PlayerDto {
 
     public int getId() {
         return connectionId;
-    }
-
-    public void setId(int connectionId) {
-        this.connectionId = connectionId;
     }
 
     public boolean isLoaded() {
@@ -46,5 +45,29 @@ public class PlayerDto {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public int getLifeScore() {
+        return lifeScore;
+    }
+
+    public void setLifeScore(int lifeScore) {
+        this.lifeScore = lifeScore;
+    }
+
+    public boolean isMovementEnabled() {
+        return movementEnabled;
+    }
+
+    public void setMovementEnabled(boolean movementEnabled) {
+        this.movementEnabled = movementEnabled;
+    }
+
+    public boolean isHit() {
+        return isHit;
+    }
+
+    public void setHit(boolean hit) {
+        isHit = hit;
     }
 }
