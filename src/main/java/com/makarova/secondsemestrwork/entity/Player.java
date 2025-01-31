@@ -1,6 +1,7 @@
 package com.makarova.secondsemestrwork.entity;
 
 import com.google.gson.Gson;
+import com.makarova.secondsemestrwork.controller.MainController;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.makarova.secondsemestrwork.controller.MainController.players;
 import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
 
@@ -26,6 +28,7 @@ public class Player {
     public int prevX, prevY;
     public int speed;
     public int id;
+    public String name;
     private PlayerDto playerDto;
     private Pistol pistol;
     private boolean loaded;
@@ -34,6 +37,7 @@ public class Player {
     private boolean isHit = false;
     Gson gson = new Gson();
     private Timeline recoveryTimeline;
+    private static final double MIN_DISTANCE = 65;
 
     public Player(int x, int y, int id) {
         this.speed = 2;
@@ -59,9 +63,27 @@ public class Player {
                 47, 48);
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        playerDto.setName(name);
+    }
 
     public void moveUp() {
-        y -= speed;
+        double newX = x;
+        double newY = y - speed;
+        for (Player otherPlayer : players) {
+            if (otherPlayer != this) {
+                double distance = calculateDistance(newX, newY, otherPlayer.getX(), otherPlayer.getY());
+                if (distance < MIN_DISTANCE) {
+                    return;
+                }
+            }
+        }
+        y = (int) newY;
         playerDto.setY(y);
         pistol.setDirection("up");
         pistol.setY((int) pistol.getY() - speed);
@@ -76,7 +98,17 @@ public class Player {
     }
 
     public void moveDown() {
-        y += speed;
+        double newX = x;
+        double newY = y + speed;
+        for (Player otherPlayer : players) {
+            if (otherPlayer != this) {
+                double distance = calculateDistance(newX, newY, otherPlayer.getX(), otherPlayer.getY());
+                if (distance < MIN_DISTANCE) {
+                    return;
+                }
+            }
+        }
+        y = (int) newY;
         playerDto.setY(y);
         pistol.setDirection("down");
         pistol.setY((int) pistol.getY() + speed);
@@ -91,7 +123,19 @@ public class Player {
     }
 
     public void moveLeft() {
-        x -= speed;
+        double newX = x - speed;
+        double newY = y;
+
+        for (Player otherPlayer : players) {
+            if (otherPlayer != this) {
+                double distance = calculateDistance(newX, newY, otherPlayer.getX(), otherPlayer.getY());
+                if (distance < MIN_DISTANCE) {
+                    return;
+                }
+            }
+        }
+
+        x = (int) newX;
         playerDto.setX(x);
         pistol.setDirection("left");
         pistol.setX((int) pistol.getX() - speed);
@@ -106,7 +150,18 @@ public class Player {
     }
 
     public void moveRight() {
-        x += speed;
+        double newX = x + speed;
+        double newY = y;
+
+        for (Player otherPlayer : players) {
+            if (otherPlayer != this) {
+                double distance = calculateDistance(newX, newY, otherPlayer.getX(), otherPlayer.getY());
+                if (distance < MIN_DISTANCE) {
+                    return;
+                }
+            }
+        }
+        x = (int) newX;
         playerDto.setX(x);
         pistol.setDirection("right");
         pistol.setX((int) (pistol.getX() + speed));
@@ -119,6 +174,11 @@ public class Player {
             throw new RuntimeException(e);
         }
     }
+
+    private double calculateDistance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+
 
     public void stopAnimation() {
         spriteAnimation.stop();

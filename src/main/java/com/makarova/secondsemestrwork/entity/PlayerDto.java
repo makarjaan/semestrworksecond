@@ -5,6 +5,7 @@ public class PlayerDto {
     private int x;
     private int y;
     private boolean loaded = false;
+    private String name;
     private int lifeScore;
     private boolean movementEnabled;
     private boolean isHit = false;
@@ -69,5 +70,13 @@ public class PlayerDto {
 
     public void setHit(boolean hit) {
         isHit = hit;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

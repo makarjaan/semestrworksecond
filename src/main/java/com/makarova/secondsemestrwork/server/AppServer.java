@@ -18,6 +18,7 @@ public class AppServer {
             server.registerListener(new BulletUpdateListener());
             server.registerListener(new HitPlayerListener());
             server.registerListener(new ChangeLifeCountListener());
+            server.registerListener(new GameStartTypeListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

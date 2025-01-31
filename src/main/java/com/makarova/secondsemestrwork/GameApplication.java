@@ -32,6 +32,7 @@ public class GameApplication extends Application {
     private BorderPane root;
     private GameView gameView;
     private GameClient gameClient;
+    private Stage primaryStage;
 
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 5555;
@@ -53,12 +54,9 @@ public class GameApplication extends Application {
         primaryStage.setHeight(screenBounds.getHeight()); //864
 
  */
-
         primaryStage.setWidth(1000);
         primaryStage.setHeight(864);
         primaryStage.setResizable(false);
-
-
         userConfigView = new UserConfigView();
         gameClient = new GameClient(InetAddress.getByName(HOST), PORT);
         root = new BorderPane();
@@ -66,9 +64,18 @@ public class GameApplication extends Application {
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
-
+        setPrimaryStage(primaryStage);
         setView(userConfigView);
     }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
 
     public void setUserConfig(UserConfig userConfig) {
         this.userConfig = userConfig;
@@ -94,6 +101,14 @@ public class GameApplication extends Application {
 
     public void setView(BaseView view) {
         root.setCenter(view.getView());
+    }
+
+    public void switchToUserConfigView() {
+        setView(userConfigView);
+    }
+
+    public void closeGameWindow(Stage primaryStage) {
+        primaryStage.close();
     }
 
 }

@@ -8,12 +8,10 @@ import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageProtocol;
 import com.makarova.secondsemestrwork.protocol.MessageType;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-
 
 public class GameClient implements Client {
 
@@ -29,14 +27,11 @@ public class GameClient implements Client {
 
     public int idPlayer;
 
-
-    //запоминаем с кем и по какому порту соединиться
     public GameClient(InetAddress address, int port) {
         this.address = address;
         this.port = port;
     }
 
-    //создаём соединение
     @Override
     public void connect() throws ClientException {
         try {
@@ -52,7 +47,6 @@ public class GameClient implements Client {
         }
     }
 
-    //получаем сообщение, сериализуем и принимаем его
     @Override
     public void sendMessage(Message message) throws ClientException, InvalidMessageException {
         try {
@@ -73,7 +67,7 @@ public class GameClient implements Client {
 
     public void stopClient() {
         if (thread != null) {
-            thread.stop();
+            thread.stopThread();
             System.out.println("Поток клиента завершен.");
         }
         if (socket != null && !socket.isClosed()) {
@@ -115,15 +109,11 @@ public class GameClient implements Client {
                         PlayerDto player = gson.fromJson(json, PlayerDto.class);
                         gameClient.idPlayer = player.getId();
                     }
-
-                    //    System.out.println("Ответ от сервера: " + MessageProtocol.toReadableString(message));
-
                 }
             } catch (InvalidMessageException e) {
                 e.printStackTrace();
             }
         }
-
 
         public InputStream getIn() {
             return in;
@@ -133,7 +123,8 @@ public class GameClient implements Client {
             return out;
         }
 
-        public void stop() {
+        public void stopThread() {
+            running = false;
             try {
                 in.close();
                 out.close();

@@ -105,7 +105,7 @@ public class ServerImpl implements Server {
             }
         };
 
-        timer.scheduleAtFixedRate(task, 8000, 4000);
+        timer.scheduleAtFixedRate(task, 8000, 3000);
     }
 
 
