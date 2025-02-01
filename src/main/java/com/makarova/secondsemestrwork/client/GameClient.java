@@ -38,7 +38,7 @@ public class GameClient implements Client {
     @Override
     public void connect() throws ClientException {
         try {
-            socket = new Socket("10.17.63.134", port);
+            socket = new Socket("127.0.0.1", port);
             InputStream input = socket.getInputStream();
             OutputStream output = socket.getOutputStream();
             thread = new ClientThread(input, output, this);
@@ -109,9 +109,7 @@ public class GameClient implements Client {
 
                     if (message.getType() == MessageType.PLAYER_CONNECTION_TYPE) {
                         String json = new String(message.getData(), StandardCharsets.UTF_8);
-                        Type type = new TypeToken<Map<String, Object>>() {}.getType();
-                        Map<String, Object> receivedData = gson.fromJson(json, type);
-                        PlayerDto player = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
+                        PlayerDto player = gson.fromJson(json, PlayerDto.class);
                         gameClient.idPlayer = player.getId();
                     }
                 }

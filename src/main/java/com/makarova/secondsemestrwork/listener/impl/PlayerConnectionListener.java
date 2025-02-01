@@ -65,7 +65,7 @@ public class PlayerConnectionListener extends AbstractEventListener {
 
         Message connectedMessage = MessageFactory.create(
                 MessageType.PLAYER_CONNECTION_TYPE,
-                messageJson.getBytes(StandardCharsets.UTF_8)
+                playerJson.getBytes(StandardCharsets.UTF_8)
         );
 
         try {

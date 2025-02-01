@@ -35,7 +35,7 @@ public class GameApplication extends Application {
     private GameClient gameClient;
     private Stage primaryStage;
 
-    private static final String HOST = "10.17.63.134";
+    private static final String HOST = "127.0.0.1";
     private static final int PORT = 5555;
 
     public static void main(String[] args) {

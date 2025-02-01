@@ -10,7 +10,7 @@ public class AppServer {
     public static void main(String[] args) {
         try {
             Server server = new ServerImpl(PORT);
-            server.registerListener(new PlayerConnectionListener(4));
+            server.registerListener(new PlayerConnectionListener(2));
             server.registerListener(new SetPlayerPositionListener());
             server.registerListener(new PositionUpdateListener());
             server.registerListener(new InitRocketListener());

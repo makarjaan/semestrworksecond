@@ -203,19 +203,23 @@ public class ServerImpl implements Server {
 
     @Override
     public void sendBroadcastMessage(Message message) throws ServerException {
-        if(!started){
+        if (!started) {
             throw new ServerException("Server hasn't been started yet.");
         }
-        try{
-            byte[] rawMessage = MessageProtocol.getBytes(message);
-            for(Socket socket : sockets){
+        byte[] rawMessage = MessageProtocol.getBytes(message);
+        Iterator<Socket> iterator = sockets.iterator();
+        while (iterator.hasNext()) {
+            Socket socket = iterator.next();
+            try {
                 socket.getOutputStream().write(rawMessage);
                 socket.getOutputStream().flush();
+            } catch (IOException ex) {
+                System.err.println("Ошибка отправки сообщения. Удаляем сокет: " + socket);
+                iterator.remove();
             }
-        } catch (IOException ex) {
-            throw new ServerException("Can't send message.", ex);
         }
     }
+
 
     @Override
     public void sendMessageToAllExceptSender(Message message, int senderId) throws ServerException {

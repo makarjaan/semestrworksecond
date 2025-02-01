@@ -22,6 +22,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+
 public class UserConfigView extends BaseView implements MessageReceiverController{
 
     private AnchorPane pane;
@@ -46,40 +47,26 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
 
     private void createView() {
         pane = new AnchorPane();
+        box = new VBox(10);
         pane.setPrefSize(600, 400);
-
-        box = new VBox(15);
-        box.setAlignment(Pos.CENTER);
-        box.setPrefWidth(400);
-
-
         Label usernameLabel = new Label("Username:");
-        usernameLabel.setStyle("-fx-font-size: 16px;");
         username = new TextField();
-        username.setPrefSize(300, 40);
-
         username.textProperty().addListener((observable, oldValue, newValue) -> {
             start.setDisable(newValue.trim().isEmpty());
         });
 
         Label hostLabel = new Label("Host:");
-        hostLabel.setStyle("-fx-font-size: 16px;");
-        host = new TextField("10.17.58.98");
-        host.setPrefSize(300, 40);
+        host = new TextField();
+        host.setText("127.0.0.1");
 
         Label portLabel = new Label("Port:");
-        portLabel.setStyle("-fx-font-size: 16px;");
-        port = new TextField("5555");
-        port.setPrefSize(300, 40);
+        port = new TextField();
+        port.setText("5555");
 
         start = new Button("Start");
-        start.setPrefSize(300, 40);
-        start.setStyle("-fx-font-size: 16px;");
-        start.setDisable(true);  // Кнопка отключена по умолчанию
+        start.setDisable(true);
 
         launchGame = new Button("Запустить игру");
-        launchGame.setPrefSize(300, 40);
-        launchGame.setStyle("-fx-font-size: 16px;");
         launchGame.setDisable(true);
         launchGame.setVisible(false);
 
@@ -128,22 +115,26 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
         });
 
 
-        box.getChildren().addAll(usernameLabel, username, hostLabel, host, portLabel, port, start, launchGame);
-
-        pane.getChildren().add(box);
-
-        AnchorPane.setTopAnchor(box, (pane.getPrefHeight() - box.getPrefHeight()) / 2);
-        AnchorPane.setLeftAnchor(box, (pane.getPrefWidth() - box.getPrefWidth()) / 2);
+        box.getChildren().addAll(
+                usernameLabel, username, hostLabel,
+                host, portLabel, port, start, launchGame
+        );
+        pane.getChildren().addAll(box);
     }
 
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
+            /*
              case MessageType.PLAYER_CONNECTION_TYPE -> {
+
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 Type type = new TypeToken<Map<String, Object>>() {}.getType();
                 Map<String, Object> receivedData = gson.fromJson(json, type);
+
+                PlayerDto playerDto = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
                 Integer connectedPlayers = gson.fromJson(gson.toJson(receivedData.get("connectedPlayers")), Integer.class);
+
                 System.out.println(connectedPlayers);
                 count = connectedPlayers;
 
@@ -159,6 +150,8 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
                     }
                 });
             }
+
+             */
 
             case MessageType.GAME_START_TYPE -> {
                 Platform.runLater(() -> {

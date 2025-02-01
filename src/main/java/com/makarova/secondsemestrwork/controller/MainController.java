@@ -1,5 +1,6 @@
 package com.makarova.secondsemestrwork.controller;
 
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -32,6 +33,7 @@ import javafx.util.Duration;
 
 
 import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
+
 
 
 public class MainController implements MessageReceiverController{
@@ -106,6 +108,7 @@ public class MainController implements MessageReceiverController{
         mediaPlayer.setVolume(0.7);
         mediaPlayer.play();
     }
+
 
     private void update() {
         Platform.runLater(() -> {
@@ -273,11 +276,11 @@ public class MainController implements MessageReceiverController{
                 } else if (p.getId() == 2) {
                     String imagePath = "/image/player/playerGreen/green.png";
                     p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
+                    p.spriteAnimation.setOffsetY(96);
                     lifeViews.put(p, lifeGreen);
                 } else if (p.getId() == 3) {
                     String imagePath = "/image/player/playerYellow/yellow.png";
                     p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
-                    p.spriteAnimation.setOffsetY(96);
                     lifeViews.put(p, lifeYellow);
                 }
 
@@ -716,7 +719,6 @@ public class MainController implements MessageReceiverController{
                         if (!hitImagePath.equals("/image/player/dead.png")) {
                             resetPlayerState(p, hitImageView);
                         }
-                        resetPlayerState(p, hitImageView);
 
                         return;
                     }
@@ -792,7 +794,6 @@ public class MainController implements MessageReceiverController{
                         player.setPrevX(player.getX());
                         player.setPrevY(player.getY());
                         players.add(player);
-                        System.out.println("АЙДИ ИГРОКА " + player.getId());
                     } else {
                         System.out.println("Игрок с id " + p.getId() + " уже существует.");
                     }
@@ -950,6 +951,7 @@ public class MainController implements MessageReceiverController{
                     resetPlayerState(player, hitImageView);
                 });
             }
+
 
             case MessageType.LAST_BULLET_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
