@@ -873,6 +873,7 @@ public class MainController implements MessageReceiverController{
 
             case MessageType.BULLET_UPDATE_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
+                if (json == null) return;
                 BulletDto bulletDto = gson.fromJson(json, BulletDto.class);
                 Player player = players.get(bulletDto.getSenderPlayer().getId());
                 PlayerDto playerDto = bulletDto.getSenderPlayer();

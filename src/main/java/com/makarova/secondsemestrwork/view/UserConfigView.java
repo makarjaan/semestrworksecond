@@ -57,7 +57,7 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
 
         Label hostLabel = new Label("Host:");
         host = new TextField();
-        host.setText("127.0.0.1");
+        host.setText("10.17.63.134");
 
         Label portLabel = new Label("Port:");
         port = new TextField();
