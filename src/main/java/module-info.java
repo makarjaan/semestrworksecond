@@ -4,6 +4,7 @@ module com.makarova.secondsemestrwork {
     requires java.rmi;
     requires java.desktop;
     requires com.google.gson;
+    requires javafx.media;
 
     opens com.makarova.secondsemestrwork.controller to javafx.fxml;
     opens com.makarova.secondsemestrwork.entity to com.google.gson;

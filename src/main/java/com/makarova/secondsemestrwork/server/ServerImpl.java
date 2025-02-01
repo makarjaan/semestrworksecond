@@ -1,6 +1,7 @@
 package com.makarova.secondsemestrwork.server;
 
 import com.google.gson.Gson;
+import com.makarova.secondsemestrwork.entity.ObstacleDto;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
 import com.makarova.secondsemestrwork.entity.RocketDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
@@ -21,10 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.rmi.ServerException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -66,7 +64,7 @@ public class ServerImpl implements Server {
             @Override
             public void run() {
                 System.out.println("Запуск генерации ракеты");
-                RocketDto newRocket = new RocketDto((int) (Math.random() * 556.6), (int) (Math.random() * 506.4));
+                RocketDto newRocket = new RocketDto((int) (Math.random() * 530), (int) (Math.random() * 480));
                 String response = gson.toJson(newRocket);
                 System.out.println("одна ракета " + response);
 
@@ -108,6 +106,52 @@ public class ServerImpl implements Server {
         timer.scheduleAtFixedRate(task, 8000, 3000);
     }
 
+
+    public void generateRandomObstacle() {
+        int fieldWidth = 500;
+        int fieldHeight = 450;
+
+        int obstacleWidth = 50;
+        int obstacleHeight = 50;
+
+        Random random = new Random();
+        int randomX = random.nextInt(fieldWidth - obstacleWidth);
+        int randomY = random.nextInt(fieldHeight - obstacleHeight);
+
+        String obstacleId = UUID.randomUUID().toString();
+
+        ObstacleDto obstacle = new ObstacleDto(randomX, randomY, obstacleId);
+
+        String response = gson.toJson(obstacle);
+
+        try {
+            Message obstacleGenerationMessage = MessageFactory.create(
+                    MessageType.GENERATE_OBSTACLE_TYPE,
+                    response.getBytes(StandardCharsets.UTF_8)
+            );
+            sendBroadcastMessage(obstacleGenerationMessage);
+        } catch (InvalidMessageException e) {
+            System.err.println("Ошибка с сообщением: " + e.getMessage());
+        } catch (ServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public void startPeriodicObstacleGeneration() {
+        if (stertTimer) {
+            return;
+        }
+        Timer timer = new Timer();
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                generateRandomObstacle();
+            }
+        };
+        timer.scheduleAtFixedRate(task, 5000, 10000);
+    }
 
 
     @Override
@@ -192,6 +236,7 @@ public class ServerImpl implements Server {
         }
     }
 
+
     protected void handleConnection(Socket socket) throws ServerException {
         sockets.add(socket);
         int connectionId = sockets.lastIndexOf(socket);
@@ -205,6 +250,7 @@ public class ServerImpl implements Server {
                     }
                     if (message.getType() == MessageType.SET_PLAYER_POSITION_TYPE) {
                         startPeriodicMessageSending();
+                        startPeriodicObstacleGeneration();
                         stertTimer = true;
                     }
                 }

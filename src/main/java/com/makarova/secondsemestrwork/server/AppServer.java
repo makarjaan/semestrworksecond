@@ -10,7 +10,7 @@ public class AppServer {
     public static void main(String[] args) {
         try {
             Server server = new ServerImpl(PORT);
-            server.registerListener(new PlayerConnectionListener(2));
+            server.registerListener(new PlayerConnectionListener(4));
             server.registerListener(new SetPlayerPositionListener());
             server.registerListener(new PositionUpdateListener());
             server.registerListener(new InitRocketListener());
@@ -19,6 +19,9 @@ public class AppServer {
             server.registerListener(new HitPlayerListener());
             server.registerListener(new ChangeLifeCountListener());
             server.registerListener(new GameStartTypeListener());
+            server.registerListener(new LastBulletListener());
+            server.registerListener(new UpdateObstaclePositionListener());
+            server.registerListener(new DeleteObstacleListener());
             server.start();
         } catch (Exception e) {
             e.printStackTrace();

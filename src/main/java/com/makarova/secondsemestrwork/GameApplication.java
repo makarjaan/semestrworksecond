@@ -14,6 +14,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -100,15 +101,15 @@ public class GameApplication extends Application {
     }
 
     public void setView(BaseView view) {
-        root.setCenter(view.getView());
+        if (view instanceof UserConfigView) {
+            StackPane wrapper = new StackPane(view.getView());
+            wrapper.setPrefSize(1000, 864);
+            root.setCenter(wrapper);
+        } else {
+            root.setCenter(view.getView());
+        }
     }
 
-    public void switchToUserConfigView() {
-        setView(userConfigView);
-    }
 
-    public void closeGameWindow(Stage primaryStage) {
-        primaryStage.close();
-    }
 
 }

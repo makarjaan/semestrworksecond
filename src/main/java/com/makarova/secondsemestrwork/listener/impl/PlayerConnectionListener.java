@@ -14,7 +14,9 @@ import com.makarova.secondsemestrwork.server.ServerImpl;
 import java.nio.charset.StandardCharsets;
 import java.rmi.ServerException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class PlayerConnectionListener extends AbstractEventListener {
@@ -54,9 +56,16 @@ public class PlayerConnectionListener extends AbstractEventListener {
         serverImpl.getPlayers().add(player);
         String playerJson = gson.toJson(player);
 
+        int playerCount = serverImpl.getPlayers().size();
+        Map<String, Object> data = new HashMap<>();
+        data.put("playerDto", player);
+        data.put("connectedPlayers", playerCount);
+
+        String messageJson = gson.toJson(data);
+
         Message connectedMessage = MessageFactory.create(
                 MessageType.PLAYER_CONNECTION_TYPE,
-                playerJson.getBytes(StandardCharsets.UTF_8)
+                messageJson.getBytes(StandardCharsets.UTF_8)
         );
 
         try {

@@ -1,14 +1,11 @@
 package com.makarova.secondsemestrwork.controller;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.makarova.secondsemestrwork.GameApplication;
 import com.makarova.secondsemestrwork.entity.*;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
@@ -22,19 +19,17 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+
 
 import static com.makarova.secondsemestrwork.view.BaseView.getApplication;
 
@@ -51,13 +46,24 @@ public class MainController implements MessageReceiverController{
     private ImageView lifeRed;
     @FXML
     private ImageView lifeYellow;
+    @FXML
+    private ImageView wallBottom;
+    @FXML
+    private ImageView wallLeft;
+    @FXML
+    private ImageView wallRight;
+    @FXML
+    private ImageView wallTop;
 
     private Map<Player, ImageView> playerViews = new HashMap<>();
     private Map<Player, ImageView> pistolsView = new HashMap<>();
     private Map<Player, ImageView> bulletViews = new HashMap<>();
     private Map<Player, ImageView> lifeViews = new HashMap<>();
+    private Map<String, ImageView> obstacleViews = new HashMap<>();
+    private List<ImageView> walls = new ArrayList<>();
     public static List<Player> players = new ArrayList<>();
     List<ImageView> rocketImages = new ArrayList<>();
+    List<ImageView> obstacleImages = new ArrayList<>();
     private int localPlayerId;
     private Gson gson = new Gson();
     public boolean left = false;
@@ -66,6 +72,8 @@ public class MainController implements MessageReceiverController{
     public boolean down = false;
     public boolean space = false;
     private boolean gameStarted = false;
+    private MediaPlayer mediaPlayer;
+
 
 
     AnimationTimer timer = new AnimationTimer() {
@@ -77,8 +85,26 @@ public class MainController implements MessageReceiverController{
 
     @FXML
     void initialize() {
+        playBackgroundMusic();
         timer.start();
         gameStarted = true;
+    }
+
+    private void playBackgroundMusic() {
+        String musicPath = "/music/for_background.mp3";
+        Media media = new Media(getClass().getResource(musicPath).toExternalForm());
+        mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        mediaPlayer.setVolume(0.4);
+        mediaPlayer.play();
+    }
+
+    private void playShootSound() {
+        String soundPath = "/music/shoot.mp3";
+        Media sound = new Media(getClass().getResource(soundPath).toExternalForm());
+        MediaPlayer mediaPlayer = new MediaPlayer(sound);
+        mediaPlayer.setVolume(0.7);
+        mediaPlayer.play();
     }
 
     private void update() {
@@ -89,15 +115,117 @@ public class MainController implements MessageReceiverController{
                     pane.getChildren().add(rocketImage);
                 }
             }
+            List<ImageView> obstacleImagesCopy = new ArrayList<>(obstacleImages);
+            for (ImageView obstacleImage : obstacleImagesCopy) {
+                if (!pane.getChildren().contains(obstacleImage)) {
+                    pane.getChildren().add(obstacleImage);
+                }
+            }
             for (Player player : players) {
                 if (player.getId() == localPlayerId) {
                     updateLocalPlayer(player);
+                    checkObstacleCollisions(player);
                 } else {
                     updateOtherPlayers(player);
                 }
             }
             checkCollisions();
         });
+    }
+
+    private void checkObstacleCollisions(Player player) {
+        ImageView playerView = playerViews.get(player);
+        if (playerView == null) return;
+
+        Set<ImageView> movedObstacles = new HashSet<>();
+        for (ImageView obstacle : obstacleImages) {
+            if (playerView.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
+                pushObstacle(player, obstacle, movedObstacles);
+            }
+        }
+    }
+
+    private void pushObstacle(Player player, ImageView obstacle, Set<ImageView> movedObstacles) {
+        if (movedObstacles.contains(obstacle)) return;
+        movedObstacles.add(obstacle);
+
+        double pushDistance = 5;
+        double newX = obstacle.getLayoutX();
+        double newY = obstacle.getLayoutY();
+
+        String obstacleKey = null;
+        String obstacleId = null;
+
+        for (Map.Entry<String, ImageView> entry : obstacleViews.entrySet()) {
+            if (entry.getValue().equals(obstacle)) {
+                obstacleKey = entry.getKey();
+                obstacleId = obstacleKey;
+                break;
+            }
+        }
+        System.out.println("первая проверка " + obstacleKey);
+
+        String direction = "";
+        if (right) {
+            newX += pushDistance;
+            direction = "right";
+        }
+        if (left) {
+            newX -= pushDistance;
+            direction = "left";
+        }
+        if (up) {
+            newY -= pushDistance;
+            direction = "up";
+        }
+        if (down) {
+            newY += pushDistance;
+            direction = "down";
+        }
+
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        if (newX + obstacle.getFitWidth() > pane.getWidth()) {
+            newX = pane.getWidth() - obstacle.getFitWidth();
+        }
+        if (newY + obstacle.getFitHeight() > pane.getHeight()) {
+            newY = pane.getHeight() - obstacle.getFitHeight();
+        }
+
+        for (ImageView otherObstacle : obstacleImages) {
+            if (otherObstacle != obstacle &&
+                    otherObstacle.getBoundsInParent().intersects(newX, newY, obstacle.getFitWidth(), obstacle.getFitHeight())) {
+                pushObstacle(player, otherObstacle, movedObstacles);
+            }
+        }
+
+        obstacle.setLayoutX(newX);
+        obstacle.setLayoutY(newY);
+
+        obstacleViews.put(obstacleId, obstacle);
+        ObstacleDto updatedObstacleDto = new ObstacleDto((int) newX, (int) newY, obstacleId);
+
+        updatedObstacleDto.setDirection(direction);
+        try {
+            Message obstacleUpdateMessage = MessageFactory.create(
+                    MessageType.UPDATE_OBSTACLE_TYPE,
+                    gson.toJson(updatedObstacleDto).getBytes()
+            );
+            getApplication().getGameClient().sendMessage(obstacleUpdateMessage);
+        } catch (InvalidMessageException | ClientException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void scheduleRemoval(ImageView object, List<ImageView> list, int delayMillis) {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delayMillis), e -> {
+            Platform.runLater(() -> {
+                pane.getChildren().remove(object);
+                list.remove(object);
+            });
+        }));
+        timeline.setCycleCount(1);
+        timeline.play();
     }
 
     private void checkForWinner() {
@@ -111,25 +239,20 @@ public class MainController implements MessageReceiverController{
             Player winner = alivePlayers.get(0);
             Platform.runLater(() -> {
                 disconnectAllPlayers();
+
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Победа!");
                 alert.setHeaderText(null);
                 alert.setContentText("Победитель: " + winner.getName());
-                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-                alert.getButtonTypes().setAll(okButton);
-                Optional<ButtonType> result = alert.showAndWait();
-                result.ifPresent(button -> {
-                    if (button == okButton) {
-                        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        Stage currentStage = (Stage) getApplication().getPrimaryStage().getScene().getWindow();
-                        currentStage.close();
-                        stage.close();
-                    }
-                });
+                alert.getButtonTypes().clear();
+                alert.initModality(Modality.APPLICATION_MODAL);
+                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                stage.setOnCloseRequest(event -> event.consume());
+                alert.show();
             });
         }
-    }
 
+    }
 
     private void disconnectAllPlayers() {
         getApplication().getGameClient().stopClient();
@@ -150,11 +273,11 @@ public class MainController implements MessageReceiverController{
                 } else if (p.getId() == 2) {
                     String imagePath = "/image/player/playerGreen/green.png";
                     p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
-                    p.spriteAnimation.setOffsetY(96);
                     lifeViews.put(p, lifeGreen);
                 } else if (p.getId() == 3) {
                     String imagePath = "/image/player/playerYellow/yellow.png";
                     p.setimageSpriteView(getClass().getResource(imagePath).toExternalForm());
+                    p.spriteAnimation.setOffsetY(96);
                     lifeViews.put(p, lifeYellow);
                 }
 
@@ -203,8 +326,8 @@ public class MainController implements MessageReceiverController{
         if (imageView == null) return;
         if (pistolImageView == null) return;
 
-        double paneWidth = pane.getWidth();
-        double paneHeight = pane.getHeight();
+        double paneWidth = pane.getWidth() - 45;
+        double paneHeight = pane.getHeight() - 45;
         double playerWidth = imageView.getFitWidth();
         double playerHeight = imageView.getFitHeight();
         boolean isMoving = false;
@@ -213,10 +336,10 @@ public class MainController implements MessageReceiverController{
         if (right && player.getX() + playerWidth + player.getSpeed() <= paneWidth) {
             player.moveRight();
             isMoving = true;
-        } else if (left && player.getX() - player.getSpeed() >= 0) {
+        } else if (left && player.getX() - player.getSpeed() - 45>= 0) {
             player.moveLeft();
             isMoving = true;
-        } else if (up && player.getY() - player.getSpeed() >= 0) {
+        } else if (up && player.getY() - player.getSpeed() - 45>= 0) {
             player.moveUp();
             isMoving = true;
         } else if (down && player.getY() + playerHeight + player.getSpeed() <= paneHeight) {
@@ -252,6 +375,10 @@ public class MainController implements MessageReceiverController{
             lifeRed.setImage(lifeImageView.getImage());
         } else if (player.getId() == 1) {
             lifeBlue.setImage(lifeImageView.getImage());
+        } else if (player.getId() == 2) {
+            lifeGreen.setImage(lifeImageView.getImage());
+        } else if (player.getId() == 3) {
+            lifeYellow.setImage(lifeImageView.getImage());
         }
     }
 
@@ -357,9 +484,59 @@ public class MainController implements MessageReceiverController{
         return imageView;
     }
 
+    private ImageView createObstacleImage(double x, double y) {
+        double[] newPosition = getValidObstaclePosition(x, y);
+        x = newPosition[0];
+        y = newPosition[1];
+
+        String imagePath = "/image/background/ostacle.png";
+        Image image = new Image(getClass().getResource(imagePath).toExternalForm());
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(50);
+        imageView.setFitHeight(50);
+        imageView.setLayoutX(x);
+        imageView.setLayoutY(y);
+        scheduleRemoval(imageView, obstacleImages, 25000);
+        return imageView;
+    }
+
+    private double[] getValidObstaclePosition(double x, double y) {
+        int[][] restrictedCoordinates = {{77, 68}, {486, 438}, {486, 68}, {77, 438}};
+        int radius = 64;
+        int minDistance = 20;
+        int maxAttempts = 10;
+
+        for (int[] restricted : restrictedCoordinates) {
+            if (Math.abs(x - restricted[0]) <= radius && Math.abs(y - restricted[1]) <= radius) {
+                return new double[]{-1, -1};
+            }
+        }
+
+        int attempts = 0;
+        boolean positionValid;
+        do {
+            positionValid = true;
+            for (ImageView existingObstacle : obstacleImages) {
+                double existingX = existingObstacle.getLayoutX();
+                double existingY = existingObstacle.getLayoutY();
+
+                if (Math.abs(x - existingX) <= minDistance && Math.abs(y - existingY) <= minDistance) {
+                    x += minDistance * 2;
+                    y += minDistance * 2;
+                    positionValid = false;
+                    attempts++;
+                    break;
+                }
+            }
+        } while (!positionValid && attempts < maxAttempts);
+
+        return new double[]{x, y};
+    }
+
     private void shoot(Player player) {
         if (!player.isLoaded()) return;
         if (player.getLifeScore() == 0) return;
+        playShootSound();
         ImageView pistolImageView = pistolsView.get(player);
         player.setLoaded(false);
         pistolImageView.setImage(player.getPistol().getImage());
@@ -416,6 +593,7 @@ public class MainController implements MessageReceiverController{
                         (int) bulletImageView.getLayoutY(), bulletDirection);
                 bulletDto.setSenderPlayer(player.getPlayerDto());
                 bulletViews.put(player, bulletImageView);
+
                 try {
                     Message bulletMessage = MessageFactory.create(
                             MessageType.BULLET_UPDATE_TYPE,
@@ -427,6 +605,51 @@ public class MainController implements MessageReceiverController{
                     ex.printStackTrace();
                 }
 
+                for (ImageView obstacle : obstacleImages) {
+                    if (bulletImageView.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
+                        pane.getChildren().remove(bulletImageView);
+                        pane.getChildren().remove(obstacle);
+                        obstacleImages.remove(obstacle);
+                        String obstacleKey = "";
+                        String obstacleId = "";
+                        for (Map.Entry<String, ImageView> entry : obstacleViews.entrySet()) {
+                            if (entry.getValue().equals(obstacle)) {
+                                obstacleKey = entry.getKey();
+                                obstacleId = obstacleKey;
+                                break;
+                            }
+                        }
+                        System.out.println("ID ПРЕПЯДСТВИЯ " + obstacleId);
+                        ObstacleDto obstacleDto = new ObstacleDto((int) obstacle.getLayoutX(),
+                                (int) obstacle.getLayoutY(),
+                                obstacleId);
+                        try {
+                            Message obstacleMessage = MessageFactory.create(
+                                    MessageType.DELETE_OBSTACLE_TYPE,
+                                    gson.toJson(obstacleDto).getBytes()
+                            );
+                            getApplication().getGameClient().sendMessage(obstacleMessage);
+                        } catch (InvalidMessageException ex) {
+                            ex.printStackTrace();
+                        } catch (ClientException ex) {
+                            ex.printStackTrace();
+                        }
+
+
+                        try {
+                            Message bulletMessage = MessageFactory.create(
+                                    MessageType.LAST_BULLET_TYPE,
+                                    gson.toJson(bulletDto).getBytes());
+                            getApplication().getGameClient().sendMessage(bulletMessage);
+                        } catch (InvalidMessageException ex) {
+                            ex.printStackTrace();
+                        } catch (ClientException ex) {
+                            ex.printStackTrace();
+                        }
+                        timeline.stop();
+                        return;
+                    }
+                }
 
                 for (Player p : players) {
                     ImageView target = playerViews.get(p);
@@ -434,11 +657,21 @@ public class MainController implements MessageReceiverController{
                         if (p.isHit()) {
                             return;
                         }
-                        bulletViews.remove(player);
+
+                        try {
+                            Message bulletMessage = MessageFactory.create(
+                                    MessageType.LAST_BULLET_TYPE,
+                                    gson.toJson(bulletDto).getBytes());
+                            getApplication().getGameClient().sendMessage(bulletMessage);
+                        } catch (InvalidMessageException ex) {
+                            ex.printStackTrace();
+                        } catch (ClientException ex) {
+                            ex.printStackTrace();
+                        }
+
                         p.setHit(true);
                         p.minusLifeScore();
                         checkForWinner();
-                        System.out.println(p.getLifeScore());
                         updateLifeImage(p);
                         p.setMovementEnabled(false);
                         ImageView pistolImageView2 = pistolsView.get(p);
@@ -464,7 +697,6 @@ public class MainController implements MessageReceiverController{
                         hitImageView.setFitHeight(83);
                         hitImageView.setFitWidth(49);
                         pane.getChildren().add(hitImageView);
-                        bulletViews.put(p, bulletImageView);
 
                         try {
                             Message hitPlayerMessage = MessageFactory.create(
@@ -484,20 +716,11 @@ public class MainController implements MessageReceiverController{
                         if (!hitImagePath.equals("/image/player/dead.png")) {
                             resetPlayerState(p, hitImageView);
                         }
+                        resetPlayerState(p, hitImageView);
 
                         return;
                     }
                 }
-                /*
-                for (ImageView wall : walls) {
-                    if (bulletImageView.getBoundsInParent().intersects(wall.getBoundsInParent())) {
-                        pane.getChildren().remove(bulletImageView);
-                        ((Timeline) e.getSource()).stop();
-                        return;
-                    }
-                }
-
-                 */
             });
             timeline.getKeyFrames().add(keyFrame);
             timeline.setCycleCount(Animation.INDEFINITE);
@@ -548,7 +771,6 @@ public class MainController implements MessageReceiverController{
     }
 
 
-
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
@@ -570,12 +792,17 @@ public class MainController implements MessageReceiverController{
                         player.setPrevX(player.getX());
                         player.setPrevY(player.getY());
                         players.add(player);
+                        System.out.println("АЙДИ ИГРОКА " + player.getId());
                     } else {
                         System.out.println("Игрок с id " + p.getId() + " уже существует.");
                     }
                 }
                 localPlayerId = getApplication().getGameClient().idPlayer;
                 updatePlayerViews();
+                walls.add(wallBottom);
+                walls.add(wallLeft);
+                walls.add(wallRight);
+                walls.add(wallTop);
             }
 
             case MessageType.PLAYER_POSITION_UPDATE_TYPE -> {
@@ -631,6 +858,18 @@ public class MainController implements MessageReceiverController{
                 }
             }
 
+            case MessageType.GENERATE_OBSTACLE_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                ObstacleDto obstacleDto = gson.fromJson(json, ObstacleDto.class);
+                String key = obstacleDto.getKey();
+
+                ImageView imageView = createObstacleImage(obstacleDto.getX(), obstacleDto.getY());
+                if (imageView != null) {
+                    obstacleImages.add(imageView);
+                    obstacleViews.put(key, imageView);
+                }
+            }
+
             case MessageType.BULLET_UPDATE_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 BulletDto bulletDto = gson.fromJson(json, BulletDto.class);
@@ -646,7 +885,6 @@ public class MainController implements MessageReceiverController{
 
                 Platform.runLater(() -> {
                     ImageView bulletImageView = bulletViews.get(player);
-                    /*
                     if (bulletImageView == null) {
                         bulletImageView = new ImageView(new Image(getClass().getResource("/image/boosters/bullet.png").toExternalForm()));
                         bulletImageView.setFitHeight(75);
@@ -654,9 +892,6 @@ public class MainController implements MessageReceiverController{
                         pane.getChildren().add(bulletImageView);
                         bulletViews.put(player, bulletImageView);
                     }
-
-                     */
-                    if (bulletImageView != null) {return;}
                     bulletImageView.setLayoutX(bulletDto.getX());
                     bulletImageView.setLayoutY(bulletDto.getY());
 
@@ -666,16 +901,6 @@ public class MainController implements MessageReceiverController{
                         case "up" -> bulletImageView.setRotate(0);
                         case "down" -> bulletImageView.setRotate(180);
                     }
-                    List<ImageView> bulletsToRemove = new ArrayList<>();
-                    for (Player targetPlayer : players) {
-                        ImageView targetView = playerViews.get(targetPlayer);
-                        if (targetView != null && bulletImageView.getBoundsInParent().intersects(targetView.getBoundsInParent())) {
-                            bulletsToRemove.add(bulletImageView);
-                            System.out.println("Пуля попала в игрока " + targetPlayer.getId());
-                           }
-                    }
-                    pane.getChildren().removeAll(bulletsToRemove);
-                    bulletsToRemove.forEach(bulletViews::remove);
                 });
             }
 
@@ -723,6 +948,56 @@ public class MainController implements MessageReceiverController{
                     pane.getChildren().add(hitImageView);
                     hitImageView.toBack();
                     resetPlayerState(player, hitImageView);
+                });
+            }
+
+            case MessageType.LAST_BULLET_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                BulletDto bulletDto = gson.fromJson(json, BulletDto.class);
+                Player player = players.get(bulletDto.getSenderPlayer().getId());
+                Platform.runLater(() -> {
+                    ImageView bulletImageView = bulletViews.get(player);
+                    pane.getChildren().remove(bulletImageView);
+                    bulletViews.remove(player);
+                });
+            }
+
+            case MessageType.UPDATE_OBSTACLE_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                ObstacleDto obstacleDto = gson.fromJson(json, ObstacleDto.class);
+                String key = obstacleDto.getKey();
+                System.out.println(key);
+
+                Platform.runLater(() -> {
+                    ImageView imageView = obstacleViews.get(key);
+                    System.out.println(imageView);
+                    if (imageView != null) {
+                        imageView.setLayoutX(obstacleDto.getX());
+                        imageView.setLayoutY(obstacleDto.getY());
+                    } else {
+                        ImageView newImageView = new ImageView();
+                        newImageView.setLayoutX(obstacleDto.getX());
+                        newImageView.setLayoutY(obstacleDto.getY());
+                        newImageView.setFitHeight(50);
+                        newImageView.setFitWidth(50);
+                        String imagePath = "/image/background/ostacle.png";
+                        newImageView.setImage(new Image(getClass().getResource(imagePath).toExternalForm()));
+                        pane.getChildren().add(newImageView);
+                        obstacleViews.put(key, newImageView);
+                    }
+                });
+            }
+
+            case MessageType.DELETE_OBSTACLE_TYPE -> {
+                String json = new String(message.getData(), StandardCharsets.UTF_8);
+                ObstacleDto obstacleDto = gson.fromJson(json, ObstacleDto.class);
+                String key = obstacleDto.getKey();
+                System.out.println("key " + key);
+                ImageView imageView = obstacleViews.get(key);
+                System.out.println(imageView);
+                Platform.runLater(() -> {
+                    pane.getChildren().remove(imageView);
+                    obstacleViews.remove(key);
                 });
             }
         }

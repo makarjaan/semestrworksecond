@@ -3,32 +3,23 @@ package com.makarova.secondsemestrwork.view;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.makarova.secondsemestrwork.controller.MessageReceiverController;
-import com.makarova.secondsemestrwork.entity.PistolDto;
-import com.makarova.secondsemestrwork.entity.Player;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
-import com.makarova.secondsemestrwork.entity.RocketDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
 import com.makarova.secondsemestrwork.exceptions.InvalidMessageException;
-import com.makarova.secondsemestrwork.listener.impl.GenerateRocketListener;
 import com.makarova.secondsemestrwork.model.UserConfig;
 import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageFactory;
 import com.makarova.secondsemestrwork.protocol.MessageType;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
-
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class UserConfigView extends BaseView implements MessageReceiverController{
@@ -55,26 +46,40 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
 
     private void createView() {
         pane = new AnchorPane();
-        box = new VBox(10);
+        pane.setPrefSize(600, 400);
+
+        box = new VBox(15);
+        box.setAlignment(Pos.CENTER);
+        box.setPrefWidth(400);
+
 
         Label usernameLabel = new Label("Username:");
+        usernameLabel.setStyle("-fx-font-size: 16px;");
         username = new TextField();
+        username.setPrefSize(300, 40);
+
         username.textProperty().addListener((observable, oldValue, newValue) -> {
             start.setDisable(newValue.trim().isEmpty());
         });
 
         Label hostLabel = new Label("Host:");
-        host = new TextField();
-        host.setText("127.0.0.1");
+        hostLabel.setStyle("-fx-font-size: 16px;");
+        host = new TextField("127.0.0.1");
+        host.setPrefSize(300, 40);
 
         Label portLabel = new Label("Port:");
-        port = new TextField();
-        port.setText("5555");
+        portLabel.setStyle("-fx-font-size: 16px;");
+        port = new TextField("5555");
+        port.setPrefSize(300, 40);
 
         start = new Button("Start");
-        start.setDisable(true);
+        start.setPrefSize(300, 40);
+        start.setStyle("-fx-font-size: 16px;");
+        start.setDisable(true);  // Кнопка отключена по умолчанию
 
         launchGame = new Button("Запустить игру");
+        launchGame.setPrefSize(300, 40);
+        launchGame.setStyle("-fx-font-size: 16px;");
         launchGame.setDisable(true);
         launchGame.setVisible(false);
 
@@ -123,42 +128,37 @@ public class UserConfigView extends BaseView implements MessageReceiverControlle
         });
 
 
-        box.getChildren().addAll(
-                usernameLabel, username, hostLabel,
-                host, portLabel, port, start, launchGame
-        );
-        pane.getChildren().addAll(box);
+        box.getChildren().addAll(usernameLabel, username, hostLabel, host, portLabel, port, start, launchGame);
+
+        pane.getChildren().add(box);
+
+        AnchorPane.setTopAnchor(box, (pane.getPrefHeight() - box.getPrefHeight()) / 2);
+        AnchorPane.setLeftAnchor(box, (pane.getPrefWidth() - box.getPrefWidth()) / 2);
     }
 
     @Override
     public void receiveMessage(Message message) {
         switch (message.getType()) {
-            /* case MessageType.PLAYER_CONNECTION_TYPE -> {
+             case MessageType.PLAYER_CONNECTION_TYPE -> {
                 String json = new String(message.getData(), StandardCharsets.UTF_8);
                 Type type = new TypeToken<Map<String, Object>>() {}.getType();
                 Map<String, Object> receivedData = gson.fromJson(json, type);
-
-                PlayerDto playerDto = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
                 Integer connectedPlayers = gson.fromJson(gson.toJson(receivedData.get("connectedPlayers")), Integer.class);
-
                 System.out.println(connectedPlayers);
                 count = connectedPlayers;
 
                 Platform.runLater(() -> {
-                    // Показываем кнопку, если количество игроков от 2 до 4
                     if (count >= 2 && count <= 4) {
-                        launchGame.setVisible(true);  // Показываем кнопку
-                        launchGame.setDisable(false);  // Активируем кнопку
+                        launchGame.setVisible(true);
+                        launchGame.setDisable(false);
                         System.out.println("Кнопка активирована, количество игроков: " + count);
                     } else {
-                        launchGame.setVisible(false);  // Скрываем кнопку, если игроков меньше 2 или больше 4
-                        launchGame.setDisable(true);  // Делаем кнопку неактивной
+                        launchGame.setVisible(false);
+                        launchGame.setDisable(true);
                         System.out.println("Кнопка скрыта, количество игроков: " + count);
                     }
                 });
             }
-
-             */
 
             case MessageType.GAME_START_TYPE -> {
                 Platform.runLater(() -> {

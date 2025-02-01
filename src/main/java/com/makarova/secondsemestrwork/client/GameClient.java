@@ -1,6 +1,7 @@
 package com.makarova.secondsemestrwork.client;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.makarova.secondsemestrwork.controller.MessageReceiverController;
 import com.makarova.secondsemestrwork.entity.PlayerDto;
 import com.makarova.secondsemestrwork.exceptions.ClientException;
@@ -9,9 +10,11 @@ import com.makarova.secondsemestrwork.protocol.Message;
 import com.makarova.secondsemestrwork.protocol.MessageProtocol;
 import com.makarova.secondsemestrwork.protocol.MessageType;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class GameClient implements Client {
 
@@ -106,7 +109,9 @@ public class GameClient implements Client {
 
                     if (message.getType() == MessageType.PLAYER_CONNECTION_TYPE) {
                         String json = new String(message.getData(), StandardCharsets.UTF_8);
-                        PlayerDto player = gson.fromJson(json, PlayerDto.class);
+                        Type type = new TypeToken<Map<String, Object>>() {}.getType();
+                        Map<String, Object> receivedData = gson.fromJson(json, type);
+                        PlayerDto player = gson.fromJson(gson.toJson(receivedData.get("playerDto")), PlayerDto.class);
                         gameClient.idPlayer = player.getId();
                     }
                 }

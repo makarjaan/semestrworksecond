@@ -22,7 +22,7 @@ public class BulletUpdateListener extends AbstractEventListener {
         );
 
         try {
-            this.server.sendMessageToAllExceptSender(sendPosition, connectionId);
+            this.server.sendBroadcastMessage(sendPosition);
         } catch (ServerException e) {
             e.printStackTrace();
         }

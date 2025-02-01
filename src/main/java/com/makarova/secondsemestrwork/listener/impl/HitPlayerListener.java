@@ -22,6 +22,7 @@ public class HitPlayerListener extends AbstractEventListener {
         String json = new String(message.getData(), StandardCharsets.UTF_8);
         PlayerDto playerDto = gson.fromJson(json, PlayerDto.class);
         int id = playerDto.getId();
+        System.out.println("АЙДИ В КОГО ПОПАЛИ " + id);
 
         Message sendPosition = MessageFactory.create(
                 MessageType.HIT_PLAYER_TYPE,
@@ -29,7 +30,7 @@ public class HitPlayerListener extends AbstractEventListener {
         );
 
         try {
-            this.server.sendMessage(id, sendPosition);
+            this.server.sendBroadcastMessage(sendPosition);
         } catch (ServerException e) {
             e.printStackTrace();
         }
