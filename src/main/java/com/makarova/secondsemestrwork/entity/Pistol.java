@@ -7,8 +7,8 @@ import javafx.scene.image.ImageView;
 public class Pistol {
     private double x, y;
     private ImageView imageView;
-    Image image = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\shoot.png");
-    private Image imageLoaded = new Image("C:\\Users\\arina\\IdeaProjects\\secondsemestrwork\\src\\main\\resources\\image\\boosters\\loaded_pistol.png");
+    Image image = new Image(getClass().getResource("image/boosters/shoot.png").toExternalForm());
+    private Image imageLoaded = new Image(getClass().getResource("image/boosters/loaded_pistol.png").toExternalForm());
     private String direction;
     private int playerId;
     private PistolDto pistolDto;

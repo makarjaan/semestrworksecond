@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class GameClient implements Client {
 
-    protected final InetAddress address;
+    protected final String address;
 
     protected final int port;
 
@@ -30,7 +30,7 @@ public class GameClient implements Client {
 
     public int idPlayer;
 
-    public GameClient(InetAddress address, int port) {
+    public GameClient(String address, int port) {
         this.address = address;
         this.port = port;
     }
@@ -38,7 +38,7 @@ public class GameClient implements Client {
     @Override
     public void connect() throws ClientException {
         try {
-            socket = new Socket(address, port);
+            socket = new Socket("10.17.63.134", port);
             InputStream input = socket.getInputStream();
             OutputStream output = socket.getOutputStream();
             thread = new ClientThread(input, output, this);
